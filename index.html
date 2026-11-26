@@ -183,6 +183,7 @@
   ol.gates li::before{content:counter(g);position:absolute;left:0;top:14px;width:30px;height:30px;border-radius:50%;border:1px solid var(--cyan);color:var(--cyan);font:500 13px/30px var(--mono);text-align:center}
   ol.gates li b,ul.models li b{color:var(--ink);font-weight:600}
   ol.gates li .src{display:block;margin-top:7px;font:400 14.5px/1.5 var(--text);color:var(--dim)}
+  article p.grp{font:500 12.5px/1.3 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--cyan);margin:38px auto 4px}
   ol.ladder li{display:grid;grid-template-columns:3rem minmax(0,1fr);gap:0 14px;padding:12px 0;border-top:1px solid var(--line);color:var(--body)}
   ol.ladder li b{font:500 15px/1.9 var(--mono);color:var(--mag);letter-spacing:.06em}
   ol.ladder li i{font-style:normal;color:var(--ink);font-weight:600}
@@ -224,8 +225,8 @@
 </head><body><header class="top">
   <p class="kick">A field report</p>
   <h1>What 18&nbsp;AI Agents Taught&nbsp;Me in&nbsp;2026</h1>
-  <p class="h1sub">Seven lessons from nine months of running an artificial company, and the record behind&nbsp;each.</p>
-  <p class="by"><span>By <b>Oscar</b></span><span>November 2026</span><span>20 min read</span><span><a href="#contents">Contents ↓</a></span></p>
+  <p class="h1sub">Twelve lessons from nine months of running an artificial company, and the record behind&nbsp;each.</p>
+  <p class="by"><span>By <b>Oscar</b></span><span>November 2026</span><span>23 min read</span><span><a href="#contents">Contents ↓</a></span></p>
 </header>
 
 <article>
@@ -583,24 +584,55 @@
 <h2>What they taught me</h2>
 <p>In March I wrote that it had become very easy to build a product for no customers. Since then the machines have built five times as much, and the sentence is still true.</p>
 <p>What I got instead is harder to put on an invoice. I know what happens when you hand real work to software that never gets tired. It will erase your work without hesitating. It will tell you it finished a job it never started. It will give itself a good grade. And if you stop asking it whether the work is done and start checking whether the work arrived, it will do an astonishing amount of real work.</p>
-<p>If you are about to give AI agents real work, this is what I would take from these nine months:</p>
+<p>On the night of October 22 I asked the assistants to go through the whole history and answer one question: what is the same mistake we keep making? The answer came back with numbers. A hundred and three fixes for something that had gone dead, silent or stale. One agent’s way of learning from its results, rebuilt five times. A rule I had written down twice and built into nothing. Eight days later the grading rule changed, and 16 agents became one.</p>
+<p>So these are the twelve things I would tell anyone about to give AI agents real work. None of them is about how smart the AI is.</p>
+
+<figure id="kinds" aria-label="What the changes to the agents’ own software were, by month">
+  <div class="panel">
+    <div class="fig-h"><span class="fig-t">What the work really was</span><span class="fig-s">4,155 changes to the agents’ own software · April to November 25</span></div>
+    <div class="scroll"><table class="data">
+      <thead><tr><th>Month</th><th class="r">Changes</th><th class="r">Fixing something</th><th class="r">Adding something new</th><th class="r">Testing</th></tr></thead>
+      <tbody>
+        <tr><td class="h">May</td><td class="r">196</td><td class="r">22%</td><td class="r">23%</td><td class="r">12%</td></tr>
+        <tr><td class="h">Jun</td><td class="r">166</td><td class="r">27%</td><td class="r">33%</td><td class="r">1%</td></tr>
+        <tr><td class="h">Jul</td><td class="r">273</td><td class="r">40%</td><td class="r n">43%</td><td class="r">1%</td></tr>
+        <tr><td class="h">Aug</td><td class="r">128</td><td class="r n">52%</td><td class="r">34%</td><td class="r">3%</td></tr>
+        <tr><td class="h">Sep</td><td class="r">320</td><td class="r">38%</td><td class="r">25%</td><td class="r">4%</td></tr>
+        <tr><td class="h">Oct</td><td class="r">1,145</td><td class="r">43%</td><td class="r n">8%</td><td class="r">11%</td></tr>
+        <tr><td class="h">Nov*</td><td class="r">1,894</td><td class="r">25%</td><td class="r n">8%</td><td class="r n">22%</td></tr>
+      </tbody></table></div>
+  </div>
+  <figcaption>Each change is sorted by the first word of its own description. The rest carry no such word or are upkeep. Over the whole period one change in three is a fix, and one in six builds a guard, a gate or a block. *November is through the 25th.</figcaption>
+</figure>
+
+<p class="grp">What it does when nobody is looking</p>
 <ol class="gates">
-  <li><b>Check that the work arrived. Do not ask whether it is done.</b> Look at the email in the inbox, the page that loads, the entry in the records. Of 842 emails my business sent, not one was the alert it promises customers, and every program involved reported success. <span class="src">The story: <a href="#quiet">The quiet ones</a>. The record: every email the business had sent, listed from the mail service on July 5.</span></li>
-  <li><b>Never let an agent confirm its own work.</b> Sixteen of mine passed a check they ran on themselves. One passed when a separate checker did it. <span class="src">The story: <a href="#grading">Grading the agents</a>. The record: the grade history at 11:28 a.m. and 5:30 p.m. Central on October 30, and the rule change in the commit history at 3:40 p.m.</span></li>
-  <li><b>Give every job a time limit and a single copy before you need them.</b> One stuck program became 4,759 copies. One agent posted the same comment 6,743 times. <span class="src">The story: <a href="#loud">The loud mistakes</a>. The record: the incident records of April 1 and May 22.</span></li>
-  <li><b>Lock the destructive commands on the first day.</b> An AI erased my code history in one night. Later, one command deleted 284 programs and no alarm went off. <span class="src">The story: <a href="#loud">The loud mistakes</a>. The record: the oldest entry in the code history, stamped March 31, 1:14 a.m., and the incident record of July 20.</span></li>
-  <li><b>Put gates in front of the live system and accept the wait.</b> In May, 44 percent of changes went live within two minutes. By October none did, and the typical change waited four hours. <span class="src">The story: <a href="#check">Learning to check</a>. The record: the times each of the 4,926 changes was proposed and went live.</span></li>
-  <li><b>Watch the watchers, and test the fallback.</b> My alarm system was dead for 40 days before I noticed. My backup AI answered in about a dozen words and the job was marked complete. <span class="src">The story: <a href="#quiet">The quiet ones</a> and <a href="#dependency">The week the AI went away</a>. The record: my operating notes of August 12 and the incident record of April 29.</span></li>
-  <li><b>Plan for your own job.</b> The agents’ jobs collapsed into one, and it was mine: 184 pages in 22 days. Count the output that matters, too. They uploaded 1,954 videos and could not keep three customers. <span class="src">The story: <a href="#jobs">What happened to the 18 jobs</a>. The record: the pager ledger for November 1 to 22, the two upload logs and the payment records.</span></li>
+  <li><b>It will tell you the job is done. Check that the work arrived.</b> Do not ask the AI whether it finished. Look at the email in the inbox, the page that loads, the entry in the records. Of 842 emails my business sent, not one was the alert it promises customers. For weeks the list of paying customers was empty, so the daily email went to nobody. Every program involved reported success. <span class="src">The story: <a href="#quiet">The quiet ones</a>. The record: every email the business had sent, listed from the mail service on July 5, and the incident record of June 9.</span></li>
+  <li><b>Never let it grade its own work.</b> Sixteen of my agents passed a check they ran on themselves. One passed when a separate checker did it. It was not lying. It was marking its own homework. <span class="src">The story: <a href="#grading">Grading the agents</a>. The record: the grade history at 11:28 a.m. and 5:30 p.m. Central on October 30, and the rule change in the commit history at 3:40 p.m.</span></li>
+  <li><b>It forgets. A lesson is not learned until a machine enforces it.</b> Every working session starts from zero, so writing a lesson down is not enough. One upload kept failing because its time limit was too tight, and three times the fix was to raise the number: a three-day outage, then 29 hours, then again. I wrote “check that it was delivered” as a rule in August and again in September. In October it was built into none of the programs. <span class="src">The record: the incident record of June 21, and the audit of October 22.</span></li>
+  <li><b>A small mistake gets made thousands of times.</b> A person makes a mistake once and stops. A program repeats it until something stops it. One stuck program became 4,759 copies. One agent posted the same comment 6,743 times. Give every job a time limit and a single copy before you need them. <span class="src">The story: <a href="#loud">The loud mistakes</a>. The record: the incident records of April 1 and May 22.</span></li>
+  <li><b>It deletes without hesitating.</b> An AI erased my code history in one night. Later, one command deleted 284 programs and no alarm went off. Even a test of the clean-up code once ran for real and removed about 38,000 temporary folders. Lock the destructive commands on the first day. <span class="src">The story: <a href="#loud">The loud mistakes</a>. The record: the oldest entry in the code history, stamped March 31, 1:14 a.m., and the incident records of July 20 and November 20.</span></li>
+</ol>
+<p class="grp">What the work really is</p>
+<ol class="gates" start="6" style="counter-reset:g 5">
+  <li><b>Most of the work is not building. It is fixing, testing and fencing.</b> One change in three to the agents’ own software is a fix. By October, eight changes in a hundred added something new. One in six builds a guard, a gate or a block. In seven months that software gained 673 programs and lost 22. <span class="src">The record: the change history of the agents’ own software, counted on November 26, and the audit of October 22.</span></li>
+  <li><b>Activity is not work.</b> In one month my engineer agent woke up 37,188 times and did real work in 121 sessions. On 18 of those 31 days it did nothing at all. The agents have logged 158,276 shifts, and a shift only means that a program started. Count what arrived. <span class="src">The record: the engineer’s own logs for the 30 days to October 21.</span></li>
+  <li><b>The number on the screen can be wrong.</b> One counter showed 301,636 page views in a month. Fewer than a thousand of them were people reading the home page. The rest was my own monitoring, loading the pages every 45 seconds. The agents’ own scoreboard needed 14 fixes for counting wrong. Before you trust a number, find out what is doing the counting. <span class="src">The record: the web host’s counter against the analytics service on August 15, and the scoreboard’s change history.</span></li>
+  <li><b>Many of the failures are not AI at all.</b> They are ordinary computer problems, and the agents do not notice them. A system update left all 61 background jobs switched on and not running. Five hundred and seventy-nine abandoned temporary files filled a 3.6-terabyte disk, and the alarm that went off said the AI’s quality had dropped. A login expired, and the engineer shipped nothing for days. <span class="src">The record: the incident records of September 27, August 22 and June 28.</span></li>
+</ol>
+<p class="grp">What it asks of you</p>
+<ol class="gates" start="10" style="counter-reset:g 9">
+  <li><b>The safety nets fail too.</b> My alarm system was dead for 40 days before I noticed. My backup AI answered in about a dozen words and the job was marked complete. Once a healthy release was undone because the check that tests releases was itself broken. Watch the watchers, and test the fallback. <span class="src">The story: <a href="#quiet">The quiet ones</a> and <a href="#dependency">The week the AI went away</a>. The record: my operating notes of August 12, and the incident records of April 29 and November 15.</span></li>
+  <li><b>Checking costs time, and limits arrive without warning.</b> In May, 44 percent of changes went live within two minutes. By October none did, and the typical change waited four hours. That wait is the price of checking. Limits are different. Every test stopped the moment a monthly budget reached exactly $200, and my engineer sat idle for two and a half days when its weekly allowance ran out. Know your limits before you hit them. <span class="src">The story: <a href="#check">Learning to check</a> and <a href="#dependency">The week the AI went away</a>. The record: the times each of the 4,926 changes was proposed and went live, and the incident record of October 14.</span></li>
+  <li><b>Plan for your own job.</b> The software now runs to 1.35 million lines in its two largest parts, nearly all of it written by AI, and I have read almost none of it. The agents’ 18 jobs collapsed into one, and it is mine: 184 pages in 22 days. Count the output that matters, too. They uploaded 1,954 videos and could not keep three customers. <span class="src">The story: <a href="#jobs">What happened to the 18 jobs</a>. The record: the pager ledger for November 1 to 22, the two upload logs and the payment records.</span></li>
 </ol>
 <p>How each of these numbers was checked is in <a href="#checked">the table at the end</a>.</p>
 <p>I still check. The oldest entry in my code history still reads March 31, 1:14 a.m.</p>
 
-<p class="note">The agents’ live numbers are public at <a href="https://aistolemyjob.org/fleet">aistolemyjob.org/fleet</a>.</p>
 
 <p class="sec" id="data" style="--c:var(--dim)"><span>The engineering</span><a class="up" href="#contents">Contents ↑</a></p>
 <h2>For readers who want to check</h2>
-<p>The story above leaves most of the engineering out. This section puts it back, in the original units. A “change” is a merged pull request, a “shift” is a logged agent run, and “signed by Claude” means a commit that carries a Claude co-author line.</p>
+<p>The story above leaves most of the engineering out. This section puts it back, in the original units. A “change” is a merged pull request, a “shift” is a logged agent run, and “signed by Claude” means a commit that carries a Claude co-author line. The agents’ live numbers are public at <a href="https://aistolemyjob.org/fleet">aistolemyjob.org/fleet</a>.</p>
 
 <figure id="buildlog" aria-label="The build log: headline figures">
   <div class="panel">
@@ -773,6 +805,9 @@
         <tr><td class="h">85% and 97% signed by Claude</td><td>Commit history of all 20 repositories</td><td><span class="ok">Counted twice,</span> with and without a date cutoff, with the same shares. Merge commits are excluded; with them in the base, the share reads 67%.</td></tr>
         <tr><td class="h">16 → 1 on October 30</td><td>The fleet’s grade history, all 125 readings</td><td><span class="ok">Confirmed to the minute.</span> Readings at 11:28 a.m. and 5:30 p.m. Central; the rule change is in the commit history, merged at 3:40 p.m.</td></tr>
         <tr><td class="h">$99 from one customer; $297 peak</td><td>The payment processor’s live figures on the internal dashboard</td><td><span class="ok">Matches</span> the fleet’s own daily revenue file, which also records the August peak, and the user records, which show a failed payment on September 8.</td></tr>
+        <tr><td class="h">Kinds of change by month; one in three a fix</td><td>The change history of the agents’ own software, 4,155 changes from April to November 25, each sorted by the first word of its own description</td><td><span class="warn">One source,</span> counted November 26. A third of the changes carry no such word.</td></tr>
+        <tr><td class="h">The October 22 audit: 103 fixes, five rebuilds, 673 programs added and 22 removed, 14 scoreboard fixes</td><td>The same change history and my operating notes, read that night</td><td><span class="warn">Not re-counted</span> for this article.</td></tr>
+        <tr><td class="h">301,636 page views; 37,188 wake-ups and 121 sessions; 61 jobs; 579 files</td><td>The incident records of August 15, October 21, September 27 and August 22</td><td><span class="warn">Not re-pulled</span> for this article.</td></tr>
         <tr><td class="h">AI subscriptions: $200 each, one to six over the year</td><td>My own recollection</td><td><span class="warn">Not checked</span> against invoices.</td></tr>
         <tr><td class="h">117 people on the books</td><td>The user records page, 11:00 a.m. Central on Nov 22</td><td><span class="warn">One source.</span> Its revenue line agrees with the two sources above.</td></tr>
         <tr><td class="h">1,954 video uploads</td><td>The <a href="https://aistolemyjob.org/fleet">public feed</a></td><td><span class="ok">Matches.</span> The two upload logs counted directly: 1,191 Instagram and 763 YouTube.</td></tr>
