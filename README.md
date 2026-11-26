@@ -1,6 +1,6 @@
-# One OpenClaw. 18 AI Agents. One Human.
+# What 18 AI Agents Taught Me in 2026
 
-A field report on nine months of giving 18 AI agents real jobs: what broke, how they were graded, and what I check now.
+Seven lessons from nine months of running an artificial company, and the record behind each.
 
 **Read it:** https://flowtapelabs.github.io/year-of-agents/
 
