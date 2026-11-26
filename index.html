@@ -1,0 +1,799 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="description" content="A field report on a year of giving 18 AI agents real jobs: what broke, how they were graded, and what I check now."><meta property="og:type" content="article"><meta property="og:title" content="One OpenClaw. 18 AI Agents. One Human."><meta property="og:description" content="A field report on a year of giving 18 AI agents real jobs: what broke, how they were graded, and what I check now."><meta name="twitter:card" content="summary_large_image"><link rel="canonical" href="https://flowtapelabs.github.io/year-of-agents/"><meta property="og:url" content="https://flowtapelabs.github.io/year-of-agents/"><meta property="og:image" content="https://flowtapelabs.github.io/year-of-agents/img/og.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="628"><meta name="twitter:image" content="https://flowtapelabs.github.io/year-of-agents/img/og.jpg"><style>:root{color-scheme:dark}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style><title>One OpenClaw. 18 AI Agents. One Human.</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  /* a dark long-read: one centered reading column, wider data figures and screenshots, neon numerals in the manner of the build log */
+  :root{
+    --bg:#07080c; --panel:#0c0e15; --panel2:#12151e; --line:#1f2333; --line2:#2d3248;
+    --ink:#f6f7fb; --body:#d7dae4; --dim:#9aa0b5; --faint:#7b819a;
+    --cyan:#5eead4; --mag:#f684dc; --amber:#fbbf24; --violet:#a3a8ff; --red:#ff6b6b; --gray:#4d5369;
+    --display:"Instrument Serif","Iowan Old Style","Palatino Linotype",Georgia,serif;
+    --text:"Source Serif 4","Iowan Old Style",Georgia,serif;
+    --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
+    --num:"Anton","Arial Narrow",Impact,sans-serif;
+    color-scheme:dark;
+  }
+  *{box-sizing:border-box}
+  body{background:
+      radial-gradient(900px 520px at 10% -6%, rgba(94,234,212,.10), transparent 62%),
+      radial-gradient(820px 480px at 94% -2%, rgba(246,132,220,.08), transparent 60%),
+      var(--bg);
+    background-repeat:no-repeat; color:var(--body); font:400 20px/1.68 var(--text);
+    padding-left:max(20px,env(safe-area-inset-left,0px)); padding-right:max(20px,env(safe-area-inset-right,0px)); padding-block:64px 96px}
+  header.top, article>p, article>h2, article>.sec, article>.stat, article>.note, article>h3, article>.gapnote, article>ul{max-width:680px;margin-inline:auto}
+  article>figure{max-width:980px;margin:52px auto}
+
+  .kick{font:500 13px/1 var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--cyan);margin:0 0 26px}
+  h1{font:400 clamp(46px,7.6vw,88px)/.98 var(--display);letter-spacing:-.012em;color:var(--ink);margin:0;text-wrap:balance}
+  .h1sub{font:italic 400 clamp(26px,3.9vw,42px)/1.1 var(--display);margin:20px 0 0;text-wrap:balance;background:linear-gradient(92deg,var(--mag),var(--violet) 70%);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .dek{font:400 clamp(20px,2.5vw,24px)/1.45 var(--text);color:var(--dim);margin:28px 0 0;text-wrap:pretty}
+  .by{display:flex;flex-wrap:wrap;gap:8px 26px;font:400 13px/1.4 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--faint);border-block:1px solid var(--line);padding:14px 0;margin:34px 0 46px}
+  .by b{color:var(--ink);font-weight:500}
+
+  article p{margin:0 auto 1.15em}
+  article a{color:var(--ink);text-decoration:underline;text-decoration-color:var(--cyan);text-underline-offset:3px;text-decoration-thickness:1px}
+  article a:hover{color:var(--cyan)}
+  p.lede::first-letter{float:left;font:400 5.1em/.78 var(--display);padding:.07em .1em 0 0;color:var(--cyan)}
+  .sec{font:500 12.5px/1 var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--c,var(--cyan));margin:84px auto 14px;padding-top:26px;position:relative;border-top:1px solid var(--line)}
+  .sec::before{content:"";position:absolute;left:0;top:-1px;width:64px;height:2px;background:var(--c,var(--cyan));box-shadow:0 0 14px var(--c,var(--cyan))}
+  h2{font:400 clamp(34px,4.8vw,50px)/1.04 var(--display);letter-spacing:-.008em;color:var(--ink);margin:0 auto 26px;text-wrap:balance}
+
+  .stat{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px 24px;margin:40px auto 34px}
+  .stat .n{font:400 clamp(70px,13vw,128px)/.84 var(--num);letter-spacing:.005em;color:var(--c);text-shadow:0 0 30px color-mix(in srgb,var(--c) 40%,transparent)}
+  .stat .n small{font:400 .3em/1 var(--mono);color:var(--dim);text-shadow:none;margin:0 .3em;vertical-align:.5em}
+  .stat .t{font:italic 400 clamp(21px,2.6vw,27px)/1.22 var(--display);color:var(--ink);max-width:15.5em;padding-bottom:.3em;flex:1 1 13em}
+
+  .panel{background:linear-gradient(180deg,var(--panel),#0a0c12);border:1px solid var(--line);border-radius:14px;padding:clamp(18px,3vw,30px)}
+  .fig-h{display:flex;justify-content:space-between;gap:8px 16px;flex-wrap:wrap;align-items:baseline;margin-bottom:16px}
+  .fig-t{font:500 13px/1.3 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--ink)}
+  .fig-s{font:400 12.5px/1.3 var(--mono);color:var(--faint)}
+  figcaption{font:400 15.5px/1.5 var(--text);color:var(--dim);margin:14px auto 0;max-width:680px}
+  .mute{color:var(--faint)}
+
+  .gapnote{margin:26px auto;border:1px dashed var(--amber);border-radius:10px;padding:14px 18px;background:color-mix(in srgb,var(--amber) 6%,transparent)}
+  .gapnote b{display:block;font:500 12px/1.3 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--amber);margin-bottom:6px}
+  .gapnote span{font:400 17px/1.5 var(--text);color:var(--ink)}
+
+  /* screenshots */
+  .shot{display:block;width:100%;height:auto;border-radius:12px;border:1px solid var(--line2);background:var(--panel)}
+  .collage{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:30px 26px}
+  .collage .tile h4{font:400 28px/1.1 var(--display);color:var(--ink);margin:16px 0 6px}
+  .collage .tile h4 a{text-decoration-thickness:1px}
+  .collage .tile p{font:400 16.5px/1.5 var(--text);color:var(--body);margin:0}
+  .collage .tile .u{font:400 12.5px/1.4 var(--mono);color:var(--faint);letter-spacing:.04em;display:block;margin-top:8px}
+  @media(max-width:760px){.collage{grid-template-columns:1fr}}
+
+  .five{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:26px 18px;padding:6px 0 4px}
+  .five .v{font:400 clamp(32px,4vw,46px)/1 var(--num);color:var(--c);text-shadow:0 0 22px color-mix(in srgb,var(--c) 38%,transparent);display:block}
+  .five .u{font:italic 400 clamp(17px,1.9vw,20px)/1.2 var(--display);color:var(--ink);display:block;margin-top:8px}
+  @media(max-width:760px){.five{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+  .bl-big{display:flex;flex-wrap:wrap;gap:6px 26px;align-items:flex-end;padding:22px 0 38px}
+  .bl-big .n{font:400 clamp(82px,16vw,168px)/.88 var(--num);color:var(--cyan);text-shadow:0 0 34px rgba(94,234,212,.42)}
+  .bl-big .t1{font:italic 400 clamp(26px,3.6vw,38px)/1.05 var(--display);color:var(--ink);margin:0}
+  .bl-big .t2{font:400 13px/1.55 var(--mono);color:var(--dim);margin:10px 0 6px}
+  .bl-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:28px 26px;border-top:1px solid var(--line);padding-top:24px}
+  .bl-grid .cat{font:500 12px/1 var(--mono);letter-spacing:.18em;text-transform:uppercase;color:var(--c);display:flex;align-items:center;gap:9px;margin:0 0 16px}
+  .bl-grid .cat i{width:9px;height:9px;border-radius:50%;background:var(--c);box-shadow:0 0 10px var(--c)}
+  .s{margin:0 0 18px}
+  .s .v{font:400 clamp(32px,3.8vw,42px)/1 var(--num);color:var(--ink);display:block}
+  .s:first-of-type .v{color:var(--c)}
+  .s .u{font:italic 400 19px/1.15 var(--display);color:var(--ink);display:block;margin-top:4px}
+  .s .d{font:400 12px/1.45 var(--mono);color:var(--faint);margin:5px 0 0}
+  @media(max-width:900px){.bl-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media(max-width:520px){.bl-grid{grid-template-columns:1fr}}
+
+  .scroll{overflow-x:auto}
+  table.data{width:100%;border-collapse:collapse;font:400 14px/1.4 var(--mono);font-variant-numeric:tabular-nums}
+  table.data th{font:400 11.5px/1.3 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--faint);text-align:left;padding:0 16px 10px 0;vertical-align:bottom}
+  table.data td{padding:9px 16px 9px 0;border-top:1px solid var(--line);color:var(--body);white-space:nowrap}
+  table.data .r{text-align:right} table.data td.h{color:var(--ink);font-weight:500} table.data td.n{color:var(--ink)}
+  table.data td b{color:var(--ink);font-weight:500}
+  table.data td.b{width:22%;min-width:90px;padding-right:20px} table.data td.b i{display:block;height:8px;background:var(--cyan);border-radius:0 4px 4px 0;box-shadow:0 0 10px rgba(94,234,212,.45)}
+  table.data tr.tot td{border-top:1px solid var(--line2);color:var(--ink)}
+  table.roster td:nth-child(2), table.roster td:nth-child(3), table.plain td:nth-child(2), table.wrap td{font:400 16px/1.4 var(--text);white-space:normal;min-width:150px}
+  table.wrap td.h{font:500 14px/1.4 var(--mono);min-width:170px}
+  .pips{display:inline-flex;gap:4px;vertical-align:middle;margin-right:10px}
+  .pips i{width:9px;height:9px;border-radius:50%;border:1px solid var(--line2)} .pips i.on{background:var(--mag);border-color:var(--mag);box-shadow:0 0 8px rgba(246,132,220,.6)}
+  .lv{color:var(--ink)}
+
+  .mrow{display:grid;grid-template-columns:3.4rem minmax(0,1fr) 4.4rem 10.5rem;gap:14px;align-items:center;padding:8px 0;border-top:1px solid var(--line);font:400 14px/1.3 var(--mono);font-variant-numeric:tabular-nums}
+  .nonote .mrow{grid-template-columns:3.4rem minmax(0,1fr) 5.4rem}
+  .ml{color:var(--dim)} .mv{color:var(--ink);font-weight:500;text-align:right} .mn{color:var(--faint);font-size:12.5px}
+  .bar{display:block;height:10px;border-radius:0 5px 5px 0}
+  .track .bar{background:color-mix(in srgb,var(--c) 12%,var(--panel2))}
+  .bar i{display:block;height:100%;background:var(--c);border-radius:0 5px 5px 0;box-shadow:0 0 12px color-mix(in srgb,var(--c) 50%,transparent)}
+  @media(max-width:620px){.mrow{grid-template-columns:3rem minmax(0,1fr) 3.9rem}.mn{grid-column:2/-1;margin-top:-6px}.nonote .mrow{grid-template-columns:3rem minmax(0,1fr) 4.6rem}}
+
+  .tl{list-style:none;margin:6px 0 0;padding:0 0 0 26px;border-left:1px solid var(--line2)}
+  .tl li{position:relative;padding:0 0 24px 6px}
+  .tl li:last-child{padding-bottom:2px}
+  .tl li::before{content:"";position:absolute;left:-32px;top:.42em;width:11px;height:11px;border-radius:50%;background:var(--d,var(--cyan));box-shadow:0 0 0 4px var(--panel),0 0 14px var(--d,var(--cyan))}
+  .tl .inc{--d:var(--red)} .tl time{display:block;font:500 12.5px/1.5 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+  .tl .ev{font:400 18px/1.4 var(--text);color:var(--ink);margin:2px 0 3px}
+  .tl .rule{font:400 13.5px/1.5 var(--mono);color:var(--cyan);margin:0}
+
+  .q{display:grid;grid-template-columns:6.4rem 13.5rem minmax(0,1fr);gap:6px 22px;padding:15px 0;border-top:1px solid var(--line);align-items:baseline}
+  .q time{font:500 12.5px/1.5 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+  .q .said{font:400 13.5px/1.5 var(--mono);color:var(--cyan)} .q .was{font:400 17.5px/1.45 var(--text);color:var(--ink)}
+  .qh{font:400 11.5px/1.3 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--faint);border-top:0;padding:0 0 10px}
+  .qh span{color:var(--faint)}
+  @media(max-width:760px){.q{grid-template-columns:1fr;gap:3px}.qh{display:none}}
+
+  .colchart{padding-top:34px}
+  .cols{display:flex;align-items:flex-end;gap:2px;height:190px;border-bottom:1px solid var(--line2)}
+  .cols .c{flex:1 1 0;min-width:1px;height:calc(var(--v) / 17 * 100%);background:var(--mag);border-radius:2px 2px 0 0;position:relative}
+  .cols .c[data-l]::after{content:attr(data-l);position:absolute;left:50%;bottom:calc(100% + 7px);transform:translateX(-50%);font:500 15px/1 var(--mono);color:var(--ink)}
+  .cols .mark{flex:0 0 1px;align-self:stretch;background:var(--amber);position:relative;margin:0 5px;box-shadow:0 0 10px var(--amber)}
+  .cols .mark b{position:absolute;top:-30px;left:9px;white-space:nowrap;font:500 11.5px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--amber)}
+  .ticks{display:flex;gap:2px;margin-top:9px}
+  .ticks span{flex:1 1 0;min-width:1px;font:400 11.5px/1 var(--mono);color:var(--faint);white-space:nowrap}
+  .ticks .gap{flex:0 0 1px;margin:0 5px}
+
+  .srow{display:grid;grid-template-columns:3.2rem 4.4rem minmax(0,1fr) 11.5rem;gap:14px;align-items:center;padding:9px 0;border-top:1px solid var(--line);font:400 14px/1.3 var(--mono);font-variant-numeric:tabular-nums}
+  .sn{color:var(--ink);text-align:right} .stop{color:var(--faint);font-size:12.5px}
+  .seg,.whole{display:flex;gap:2px} .seg{height:12px} .seg i{border-radius:2px;min-width:2px} .whole{height:36px} .whole i{border-radius:3px;min-width:2px;display:flex;align-items:center;padding:0 12px;font:500 13px/1 var(--mono);color:#0b0b0b;white-space:nowrap;overflow:hidden}
+  .s-c4{background:var(--amber)} .s-fable{background:var(--mag)} .s-opus55{background:var(--cyan)} .s-other{background:var(--violet)} .s-none{background:var(--gray)}
+  .legend{font:400 12.5px/1.9 var(--mono);color:var(--dim);margin:16px 0 0}
+  .legend span{display:inline-flex;align-items:center;gap:8px;margin-right:20px;white-space:nowrap} .legend i{width:10px;height:10px;border-radius:2px;display:inline-block}
+  .legend b{color:var(--ink);font-weight:500}
+  @media(max-width:700px){.srow{grid-template-columns:3rem 3.6rem minmax(0,1fr)}.stop{grid-column:3/-1;margin-top:-6px}}
+
+  .note{font:italic 400 17.5px/1.55 var(--text);color:var(--dim);border-top:1px solid var(--line);padding-top:22px;margin-top:54px}
+  .note b{font-style:normal;font-weight:600;color:var(--ink)}
+  h3{font:500 13px/1.3 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--ink);margin:56px auto 14px}
+  article>ul{font:400 16.5px/1.6 var(--text);color:var(--dim);padding-left:1.1em}
+  article>ul li{margin-bottom:.6em}
+  dl.method{max-width:680px;margin:0 auto;font:400 15.5px/1.6 var(--text);color:var(--dim)}
+  dl.method dt{font:500 12.5px/1.4 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink);margin-top:18px}
+  dl.method dd{margin:4px 0 0}
+  .ok{color:var(--cyan)} .warn{color:var(--amber)}
+
+  .wide .mrow{grid-template-columns:minmax(8.5rem,17rem) minmax(0,1fr) 3.2rem}
+  .wide .ml{color:var(--body);font:400 16.5px/1.3 var(--text)}
+  .wide .bar i{background:var(--c);box-shadow:none}
+  @media(max-width:620px){.wide .mrow{grid-template-columns:minmax(0,1fr) 3.2rem;row-gap:6px}.wide .ml{grid-column:1;grid-row:1}.wide .mv{grid-column:2;grid-row:1}.wide .bar{grid-column:1/-1;grid-row:2}}
+  .levelscroll .cols,.levelscroll .ticks{gap:1px}
+  @media(max-width:620px){.levelscroll .cols,.levelscroll .ticks{gap:0}.levelscroll .cols .c{border-radius:0}}
+  table.repo td.h{min-width:270px}
+  .tl li.inc time{color:var(--red)}
+  h1{font-size:clamp(36px,6.6vw,76px);line-height:1.02}
+  h1 .turn{display:block;margin-top:.42em;font-size:clamp(23px,3.5vw,40px);line-height:1.2;letter-spacing:0;color:var(--cyan)}
+  h1 .turn span{display:block}
+  h1 .turn b{font-weight:400;color:var(--amber)}
+  .h1sub{font-size:clamp(19px,2.4vw,24px);line-height:1.3;margin-top:24px}
+  .ex{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:30px}
+  .ex-card{display:grid;grid-template-columns:minmax(0,168px) minmax(0,1fr);gap:18px;align-items:start;min-width:0}
+  .ex-media{position:relative;display:block;border-radius:10px;overflow:hidden;border:1px solid var(--line2);background:var(--panel2)}
+  .ex-media img{display:block;width:100%;height:auto}
+  .ex-media .play{position:absolute;left:50%;top:50%;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;background:rgba(7,8,12,.74);border:1px solid rgba(255,255,255,.55)}
+  .ex-media .play::after{content:"";position:absolute;left:18px;top:13px;border-style:solid;border-width:10px 0 10px 15px;border-color:transparent transparent transparent #fff}
+  .ex-body{min-width:0}
+  .ex .ex-who{font:400 12.5px/1.4 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin:0 0 9px}
+  .ex-who b{color:var(--ink);font-weight:500}
+  .ex-card.ex-text{grid-column:1/-1;grid-template-columns:minmax(0,1fr)}
+  .tl li.quiet{--d:var(--amber)}
+  .tl li.quiet time{color:var(--amber)}
+  .tl .rule b{font-weight:500;color:var(--faint);letter-spacing:.1em;text-transform:uppercase;font-size:.86em;margin-right:.6em}
+  article>ol.gates,article>ol.ladder{max-width:680px;margin:8px auto 28px;padding:0;list-style:none;counter-reset:g}
+  ol.gates li{position:relative;padding:13px 0 13px 46px;border-top:1px solid var(--line);color:var(--body);counter-increment:g}
+  ol.gates li::before{content:counter(g);position:absolute;left:0;top:14px;width:30px;height:30px;border-radius:50%;border:1px solid var(--cyan);color:var(--cyan);font:500 13px/30px var(--mono);text-align:center}
+  ol.gates li b,ul.models li b{color:var(--ink);font-weight:600}
+  ol.ladder li{display:grid;grid-template-columns:3rem minmax(0,1fr);gap:0 14px;padding:12px 0;border-top:1px solid var(--line);color:var(--body)}
+  ol.ladder li b{font:500 15px/1.9 var(--mono);color:var(--mag);letter-spacing:.06em}
+  ol.ladder li i{font-style:normal;color:var(--ink);font-weight:600}
+  article>ul.models{font:inherit;color:var(--body);margin-bottom:1.15em}
+  .pull{font:italic 400 clamp(22px,2.9vw,29px)/1.32 var(--display);color:var(--ink);border-left:2px solid var(--mag);padding:4px 0 4px 20px;text-wrap:balance}
+  article p.pull{margin:30px auto 34px}
+  article a.ag{text-decoration-style:dotted;text-decoration-color:var(--dim)}
+  article a.ag:hover{text-decoration-color:var(--cyan)}
+  .ex .ex-title{font:400 22px/1.2 var(--display);color:var(--ink);margin:0 0 12px}
+  .ex-quote{font:400 16px/1.5 var(--text);color:var(--body);margin:0 0 14px;padding:0 0 0 13px;border-left:2px solid var(--mag)}
+  .ex .ex-stat{font:400 15.5px/1.45 var(--text);color:var(--dim);margin:0 0 9px}
+  .ex-stat b{font:400 27px/1 var(--num);color:var(--mag);margin-right:3px}
+  .ex .ex-links{font:400 12.5px/1.6 var(--mono);color:var(--faint);margin:0}
+  @media(max-width:900px){.ex{grid-template-columns:1fr}}
+  @media(max-width:560px){.ex-card{grid-template-columns:1fr;gap:14px}.ex-media{max-width:150px}}
+  .by a{color:var(--cyan);text-decoration:none}
+  .by a:hover{text-decoration:underline}
+  article>nav.toc{max-width:980px;margin:52px auto 0}
+  .toc ol{list-style:none;margin:0;padding:0;columns:2;column-gap:48px;counter-reset:toc}
+  .toc li{break-inside:avoid;counter-increment:toc;border-top:1px solid var(--line)}
+  .toc li a{display:grid;grid-template-columns:2.3rem minmax(0,1fr);column-gap:10px;padding:12px 0 13px;text-decoration:none}
+  .toc li a::before{content:counter(toc,decimal-leading-zero);grid-row:1/3;font:500 13px/1 var(--mono);color:var(--c,var(--cyan));padding-top:.55em}
+  .toc li b{font:400 22px/1.15 var(--display);color:var(--ink);letter-spacing:-.004em}
+  .toc li span{font:400 11.5px/1.5 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-top:3px}
+  .toc li a:hover b{color:var(--c,var(--cyan))}
+  .toc .more{font:400 12.5px/2 var(--mono);color:var(--faint);margin:0;border-top:1px solid var(--line);padding-top:11px}
+  .toc .more+.more{border-top:0;padding-top:0}
+  .toc .more b{color:var(--ink);font-weight:500;letter-spacing:.14em;text-transform:uppercase;font-size:11.5px;margin-right:10px}
+  .toc .more a{color:var(--dim);text-decoration:underline;text-decoration-color:var(--line2);text-underline-offset:3px;white-space:nowrap}
+  .toc .more a:hover{color:var(--ink)}
+  @media(max-width:760px){.toc ol{columns:1}}
+  article>.sec{display:flex;justify-content:space-between;align-items:baseline;gap:16px}
+  .sec a.up{font:400 11.5px/1 var(--mono);letter-spacing:.14em;color:var(--faint);text-decoration:none;white-space:nowrap}
+  .sec a.up:hover{color:var(--ink)}
+  [id]{scroll-margin-top:22px}
+  @media(prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+</style>
+
+</head><body><header class="top">
+  <p class="kick">A field report</p>
+  <h1>One OpenClaw. 18&nbsp;AI&nbsp;Agents. <span class="turn"><span>One Human.</span></span></h1>
+  <p class="h1sub">Nine months into my artificial company. Here&nbsp;is their performance&nbsp;review.</p>
+  <p class="by"><span>By <b>Oscar</b></span><span>November 2026</span><span>20 min read</span><span><a href="#contents">Contents ↓</a></span></p>
+</header>
+
+<article>
+<p class="lede">At 1:14 on the morning of March 31, 2026, an AI working on the computer that runs my artificial company set out to clear away some oversized files. When it was done, it had erased the entire history of the software everything runs on: hundreds of saved versions, replaced by one. The stored passwords for our social media went with it. So did the schedules that tell every other AI on that computer when to work.</p>
+<p>For the better part of two days, none of them did anything.</p>
+<p>There was nobody to fire. What made the mistake was not an employee. It was software doing an employee’s job. It was not even one of the agents with a name and a job title. It was an AI coding assistant, the kind I use to build them. A few weeks earlier I had staffed a small software business with seven AI agents and no employees. I called it an artificial company. On paper it is one person and a few computers. Seven days before that night, I had published an essay about it.</p>
+
+<p>It was devastating. I had put a great deal of work into the business, and afterward it was hard for me to trust any of it again.</p>
+<p>I kept going anyway.</p>
+<p>An AI agent is a chatbot that has been given a job, the tools to do it and permission to act without asking. Where a chatbot would suggest an email, an agent sends it. Mine write software, edit videos, answer customers and post to social media, on a schedule, around the clock.</p>
+<p>I started all this because of a question I think a lot of people are quietly asking: what happens to our jobs when AI can do more and more of the work? With AI, I could build software faster than I could on my own. At first that felt exciting. Then it felt uncomfortable. I decided to find out by giving the work away.</p>
+<p>There are 18 agents now. In nine months they have logged at least 158,276 shifts. Together with the AI assistants I supervise directly, they have made 4,926 changes to the software. They have uploaded video 1,954 times, reviewed 966 of each other’s changes and filed a report card on themselves every day. At the peak, in August, three customers were paying for what they built. Today one is.</p>
+<p>You have probably been told that AI agents like these are about to take on real jobs. I gave them 18, and I kept the records. This is their performance review, and most of them are on a PIP: a performance improvement plan, the document a manager writes when someone is not meeting the bar. Every number here comes from something I can show, and most were checked a second way before they went in. The few that were not are marked at the bottom. Some of it is flattering. A good deal of it is not.</p>
+
+<figure id="five" aria-label="The year in five numbers">
+  <div class="panel">
+    <div class="fig-h"><span class="fig-t">The year in five numbers</span><span class="fig-s">FlowTape Labs · through November 22, 2026</span></div>
+    <div class="five">
+      <div style="--c:var(--mag)"><span class="v">18</span><span class="u">AI agents</span></div>
+      <div style="--c:var(--mag)"><span class="v">158,276</span><span class="u">shifts logged</span></div>
+      <div style="--c:var(--cyan)"><span class="v">4,926</span><span class="u">changes to the software</span></div>
+      <div style="--c:var(--cyan)"><span class="v">1,954</span><span class="u">video uploads</span></div>
+      <div style="--c:var(--amber)"><span class="v">1</span><span class="u">customer still paying</span></div>
+    </div>
+  </div>
+</figure>
+
+<nav class="toc" id="contents" aria-label="Contents"><div class="panel"><div class="fig-h"><span class="fig-t">In this report</span><span class="fig-s">13 parts · the evidence is in part 13</span></div><ol><li style="--c:var(--cyan)"><a href="#company"><b>Eighteen jobs, no people</b><span>The artificial company</span></a></li><li style="--c:var(--cyan)"><a href="#products"><b>What the agents run</b><span>The products</span></a></li><li style="--c:var(--mag)"><a href="#social"><b>Four agents post all day. A few dozen people watch.</b><span>The marketing</span></a></li><li style="--c:var(--red)"><a href="#loud"><b>The loud mistakes</b><span>Trust, broken</span></a></li><li style="--c:var(--amber)"><a href="#quiet"><b>The quiet ones</b><span>Trust, broken quietly</span></a></li><li style="--c:var(--cyan)"><a href="#check"><b>Learning to check</b><span>Trust, rebuilt</span></a></li><li style="--c:var(--mag)"><a href="#grading"><b>Grading the agents</b><span>The review</span></a></li><li style="--c:var(--mag)"><a href="#labor"><b>Who is actually doing the work</b><span>The labor</span></a></li><li style="--c:var(--violet)"><a href="#dependency"><b>The week the AI went away</b><span>The dependency</span></a></li><li style="--c:var(--amber)"><a href="#ledger"><b>What it is worth</b><span>The ledger</span></a></li><li style="--c:var(--cyan)"><a href="#jobs"><b>What happened to the 18 jobs</b><span>The question</span></a></li><li style="--c:var(--cyan)"><a href="#lesson"><b>What I know now</b><span>The lesson</span></a></li><li style="--c:var(--dim)"><a href="#data"><b>For readers who want to check</b><span>The engineering</span></a></li></ol><p class="more"><b>Figures</b><a href="#roster">the performance review</a> · <a href="#office">all eighteen agents</a> · <a href="#collage">the four sites</a> · <a href="#rules">every rule and its date</a> · <a href="#grades">the grade chart</a> · <a href="#numbers">each agent’s number</a> · <a href="#books">everyone on the books</a></p><p class="more"><b>In part 13</b><a href="#buildlog">the build log</a> · <a href="#local">running a model locally</a> · <a href="#checked">how each number was checked</a> · <a href="#method">how I measured this</a></p></div></nav>
+
+<p class="sec" id="company"><span>The artificial company</span><a class="up" href="#contents">Contents ↑</a></p>
+<h2>Eighteen jobs, no people</h2>
+<p>Each agent has a name, a job a person would normally hold, and written orders it reads every time it wakes up. <a href="https://aistolemyjob.org/fleet/steve">Steve</a> is the product lead and sets priorities. <a href="https://aistolemyjob.org/fleet/rico">Rico</a> is the junior engineer and writes the software. <a href="https://aistolemyjob.org/fleet/carlos">Carlos</a> is the senior one and reviews it. <a href="https://aistolemyjob.org/fleet/lola">Lola</a> edits short videos. <a href="https://aistolemyjob.org/fleet/juana">Juana</a> runs the social media accounts on <a href="https://x.com/YourStopWasHit">X</a> and <a href="https://www.threads.com/@yourstopwashit">Threads</a>. <a href="https://aistolemyjob.org/fleet/luna">Luna</a> writes to customers. <a href="https://aistolemyjob.org/fleet/felix">Felix</a> writes the daily brief. <a href="https://aistolemyjob.org/fleet/mateo">Mateo</a> keeps the machines running. One, <a href="https://aistolemyjob.org/fleet/mando">Mando</a>, does not work for the business at all: its public page lists its job as household errand runner. Each has a page like that, saying what it does and showing its latest work.</p>
+
+<figure id="office" aria-label="Screenshot of the live office page showing all eighteen agents at their desks">
+  <img class="shot" src="img/office.jpg" alt="A pixel-art office floor plan with eighteen named agents at desks in six rooms: executive, engineering, server room, trading, growth and content. A banner reads: Live, 9 of 18 working now." width="1400" height="954">
+  <figcaption>All 18 agents on the <a href="https://aistolemyjob.org/watch">live office page</a>, captured November 22. Each desk is one agent. The badge beside it is the time since that agent last finished something; nine were green at that moment.</figcaption>
+</figure>
+
+<p>They all live in one desktop computer with 256 gigabytes of memory, under a program called OpenClaw that starts and stops their work. They work from a list of 157 recurring jobs that is checked every two minutes.</p>
+
+<figure id="desk" style="max-width:520px" aria-label="Photo of the desk and the four computers behind the agents">
+  <img class="shot" src="img/desk.jpg" alt="A standing desk seen from above. A wide monitor is filled with terminal windows, and a small sign below it reads 99 dollars. A Mac Studio and two Mac minis sit on a skateboard under the desk. A person sitting on the floor holds another Mac mini, and its box is on the desk." width="1150" height="1437">
+  <figcaption>My desk on the day Taco arrived. Under it, on a skateboard, sit Torta, the Mac Studio that runs all 18 agents and does the heavy computing, and two Mac minis: Anton, the orchestrator that manages the work in the background, and Churro, which runs the tests. Taco, the new Mac mini, is fresh out of its box.</figcaption>
+</figure>
+<p>Here is one shift. A program watching the financial news notices a story and files a request for a video. <a class="ag" href="https://aistolemyjob.org/fleet/lola">Lola</a> picks it up, writes a short script, produces the video and posts it. The next day it checks how many people watched and writes itself a note about what to try next time. Its latest note to itself begins: “No attributed revenue yet — optimizing for reach.” <a class="ag" href="https://aistolemyjob.org/fleet/lola">Lola</a> has uploaded <a href="https://www.instagram.com/yourstopwashit">1,191 videos to Instagram</a> and <a href="https://www.youtube.com/@YourStopWasHit">763 to YouTube</a> this way. Both accounts are public.</p>
+
+<figure id="roster" aria-label="The performance review: all eighteen agents">
+  <div class="panel">
+    <div class="fig-h"><span class="fig-t">The performance review</span><span class="fig-s">from FlowTape Labs’ public records · Nov 22, 2026</span></div>
+    <div class="scroll"><table class="data roster"><thead><tr><th>Agent</th><th>Job</th><th>Output so far</th><th class="r">Shifts worked</th><th class="r">My rating, of 20</th><th>Ladder level, of 6</th></tr></thead><tbody>
+<tr><td class="h"><a href="https://aistolemyjob.org/fleet/lola">Lola</a></td><td>Short-video editor</td><td><b>1,954</b> video uploads</td><td class="r">8,531</td><td class="r n">19</td><td class="lvl"><span class="pips" aria-label="level 2 of 6"><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></span><span class="lv">2</span></td></tr>
+<tr><td class="h"><a href="https://aistolemyjob.org/fleet/rico">Rico</a></td><td>Junior software engineer</td><td><b>2,177</b> software changes merged</td><td class="r">4,835</td><td class="r n">19</td><td class="lvl"><span class="pips" aria-label="level 3 of 6"><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i><i class=""></i></span><span class="lv">3</span></td></tr>
+<tr><td class="h"><a href="https://aistolemyjob.org/fleet/luna">Luna</a></td><td>Customer-success rep</td><td><b>239</b> emails drafted</td><td class="r">13,505</td><td class="r n">17</td><td class="lvl"><span class="pips" aria-label="level 1 of 6"><i class="on"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></span><span class="lv">1</span></td></tr>
+<tr><td class="h"><a href="https://aistolemyjob.org/fleet/sofia">Sofia</a></td><td>Software tester</td><td><b>801</b> problems reported</td><td class="r">8,282</td><td class="r n">17</td><td class="lvl"><span class="pips" aria-label="level 2 of 6"><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></span><span class="lv">2</span></td></tr>
+<tr><td class="h"><a href="https://aistolemyjob.org/fleet/diego">Diego</a></td><td>Sales rep</td><td><b>22</b> sales emails drafted</td><td class="r">7,457</td><td class="r n">14</td><td class="lvl"><span class="pips" aria-label="level 2 of 6"><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></span><span class="lv">2</span></td></tr>
+<tr><td class="h"><a href="https://aistolemyjob.org/fleet/carlos">Carlos</a></td><td>Senior software engineer</td><td><b>966</b> reviews of others’ changes</td><td class="r">509</td><td class="r n">14</td><td class="lvl"><span class="pips" aria-label="level 3 of 6"><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i><i class=""></i></span><span class="lv">3</span></td></tr>
+<tr><td class="h"><a href="https://aistolemyjob.org/fleet/valentina">Valentina</a></td><td>Business partnerships</td><td><span class="mute">not counted yet</span></td><td class="r">199</td><td class="r n">13</td><td class="lvl"><span class="pips" aria-label="level 1 of 6"><i class="on"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></span><span class="lv">1</span></td></tr>
+<tr><td class="h"><a href="https://aistolemyjob.org/fleet/felix">Felix</a></td><td>Newsletter writer</td><td><b>58</b> daily briefs</td><td class="r">8,038</td><td class="r n">12</td><td class="lvl"><span class="pips" aria-label="level 2 of 6"><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></span><span class="lv">2</span></td></tr>
+<tr><td class="h"><a href="https://aistolemyjob.org/fleet/juana">Juana</a></td><td>Social media manager</td><td><b>1,155</b> posts on X</td><td class="r">39,068</td><td class="r n">10</td><td class="lvl"><span class="pips" aria-label="level 2 of 6"><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></span><span class="lv">2</span></td></tr>
+<tr><td class="h"><a href="https://aistolemyjob.org/fleet/maxi">Maxi</a></td><td>Video editor</td><td><b>72</b> posts on X</td><td class="r">1,013</td><td class="r n">10</td><td class="lvl"><span class="pips" aria-label="level 3 of 6"><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i><i class=""></i></span><span class="lv">3</span></td></tr>
+<tr><td class="h"><a href="https://aistolemyjob.org/fleet/marco">Marco</a></td><td>Quality lead</td><td><b>432</b> quality checks and tickets</td><td class="r">18,123</td><td class="r n">9</td><td class="lvl"><span class="pips" aria-label="level 2 of 6"><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></span><span class="lv">2</span></td></tr>
+<tr><td class="h"><a href="https://aistolemyjob.org/fleet/steve">Steve</a></td><td>Product lead</td><td><b>28</b> strategy memos</td><td class="r">12,309</td><td class="r n">9</td><td class="lvl"><span class="pips" aria-label="level 2 of 6"><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></span><span class="lv">2</span></td></tr>
+<tr><td class="h"><a href="https://aistolemyjob.org/fleet/mateo">Mateo</a></td><td>Systems engineer</td><td><b>156</b> system health reports</td><td class="r">10,609</td><td class="r n">9</td><td class="lvl"><span class="pips" aria-label="level 3 of 6"><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i><i class=""></i></span><span class="lv">3</span></td></tr>
+<tr><td class="h"><a href="https://aistolemyjob.org/fleet/antonio">Antonio</a></td><td>Market analyst</td><td><b>49</b> market write-ups</td><td class="r">21,176</td><td class="r n">8</td><td class="lvl"><span class="pips" aria-label="level 2 of 6"><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></span><span class="lv">2</span></td></tr>
+<tr><td class="h"><a href="https://aistolemyjob.org/fleet/gloria">Gloria</a></td><td>Sales-funnel analyst</td><td><span class="mute">not counted yet</span></td><td class="r">4,514</td><td class="r n"><span class="mute">not rated</span></td><td class="lvl"><span class="pips" aria-label="level 2 of 6"><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></span><span class="lv">2</span></td></tr>
+<tr><td class="h"><a href="https://aistolemyjob.org/fleet/mando">Mando</a></td><td>Household errand runner</td><td><b>89</b> messages answered</td><td class="r">95</td><td class="r n"><span class="mute">not rated</span></td><td class="lvl"><span class="mute">not graded</span></td></tr>
+<tr><td class="h"><a href="https://aistolemyjob.org/fleet/pancho">Pancho</a></td><td>Pricing researcher</td><td><span class="mute">not counted yet</span></td><td class="r">13</td><td class="r n"><span class="mute">not rated</span></td><td class="lvl"><span class="pips" aria-label="level 2 of 6"><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></span><span class="lv">2</span></td></tr>
+<tr><td class="h"><a href="https://aistolemyjob.org/fleet/scout">Scout</a></td><td>Market researcher</td><td><span class="mute">not counted yet</span></td><td class="r">0</td><td class="r n"><span class="mute">not rated</span></td><td class="lvl"><span class="pips" aria-label="level 2 of 6"><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></span><span class="lv">2</span></td></tr>
+</tbody></table></div>
+  </div>
+  <figcaption>Each name opens that agent’s public page. My rating is the score I gave 14 of them by hand between May and July, out of 20. The ladder level is explained further down. A shift is one logged run of an agent’s job, and the counts are a floor.</figcaption>
+</figure>
+
+<p class="sec" id="products" style="--c:var(--cyan)"><span>The products</span><a class="up" href="#contents">Contents ↑</a></p>
+<h2>What the agents run</h2>
+<p>The agents do not run a demo. They run four public sites, and one of them has a paying customer.</p>
+
+<figure id="collage" aria-label="Screenshots of the four sites the agents run">
+  <div class="collage">
+    <div class="tile"><img class="shot" src="img/yswh.jpg" alt="The YourStopWasHit home page. Headline: Options flow, signals and context. One place to research the market. Below it: 29,481,967 options trades tracked, 7,072 research signals generated." width="1400" height="875"><h4><a href="https://yourstopwashit.com">YourStopWasHit</a></h4><p>A research terminal for the options market. It shows unusual trading activity and the context around it. The site reports 29.5 million options trades tracked and 7,072 research signals generated. It is the one with the paying customer.</p><span class="u">yourstopwashit.com</span></div>
+    <div class="tile"><img class="shot" src="img/aij.jpg" alt="The AI Stole My Job home page. Headline: Will AI take your job? A box to type a job title." width="1400" height="875"><h4><a href="https://aistolemyjob.org">AI Stole My Job</a></h4><p>Type your job title and get an estimate of how exposed it is to automation. It is also where the agents’ own numbers are published, live.</p><span class="u">aistolemyjob.org</span></div>
+    <div class="tile"><img class="shot" src="img/ftl.jpg" alt="The FlowTape Labs home page: a wall of event flyers under the headline Every flyer on this wall moves." width="1400" height="875"><h4><a href="https://flowtapelabs.com">FlowTape Labs</a></h4><p>A studio that turns an event flyer into a short moving video, for promoters and D.J.s. It charges $10.99 a month for eight videos.</p><span class="u">flowtapelabs.com</span></div>
+    <div class="tile"><img class="shot" src="img/cfl.jpg" alt="The Whale Wire page from CryptoFlowLabs. Headline: A 3.7% drop would wipe out a $1.33 million Bitcoin bet, beside a three-day Bitcoin price chart." width="1400" height="875"><h4><a href="https://cryptoflowlabs.com">Whale Wire</a></h4><p>A running account of what the biggest crypto traders are doing, written up from public data as it happens.</p><span class="u">cryptoflowlabs.com</span></div>
+  </div>
+  <figcaption>The four sites as they looked on November 22.</figcaption>
+</figure>
+
+<p>Behind the four sites are 20 collections of code. The two largest alone hold 1.35 million lines of software, and nearly half of that is tests.</p>
+
+<p class="sec" id="social" style="--c:var(--mag)"><span>The marketing</span><a class="up" href="#contents">Contents ↑</a></p>
+<h2>Four agents post all day. A few dozen people watch.</h2>
+<p><a class="ag" href="https://aistolemyjob.org/fleet/juana">Juana</a> is the social media manager. Several times a day it writes the posts for <a href="https://x.com/YourStopWasHit">X</a> and <a href="https://www.threads.com/@yourstopwashit">Threads</a>: a market recap, an alert on a big trade, a Saturday preview of the week ahead. It drafts replies too, but a person approves each one before it is sent. <a class="ag" href="https://aistolemyjob.org/fleet/lola">Lola</a> turns the day’s market news into 30-to-60-second videos with a voiceover and uploads them to <a href="https://www.instagram.com/yourstopwashit">Instagram</a> and <a href="https://www.youtube.com/@YourStopWasHit">YouTube</a>, and posts them to X as well. <a class="ag" href="https://aistolemyjob.org/fleet/felix">Felix</a> writes the daily brief. <a href="https://aistolemyjob.org/fleet/maxi">Maxi</a> cuts video and posts it to X.</p>
+<p>The volume is real. The audience is small.</p>
+
+<figure id="examples" aria-label="Three posts as published: a video by Lola, a Threads post by Juana and an X post by Lola">
+  <div class="panel">
+    <div class="fig-h"><span class="fig-t">Three posts, as published</span><span class="fig-s">all made and published by agents · counts read Nov 22</span></div>
+    <div class="ex">
+      <div class="ex-card">
+        <a class="ex-media" href="https://youtube.com/shorts/4v0PsyEfpwE"><img src="img/print77.jpg" alt="A frame from the video. A masked host, labeled as AI-generated, sits under a caption that reads: Someone just spent $86.5M on QQQ options in a single block." width="506" height="900"><span class="play" aria-hidden="true"></span></a>
+        <div class="ex-body">
+          <p class="ex-who"><b><a class="ag" href="https://aistolemyjob.org/fleet/lola">Lola</a></b> · video · Nov 19</p>
+          <p class="ex-title">“The Print #77: $86.5M QQQ Put Block — Decoded”</p>
+          <p class="ex-stat"><b>80</b> views and no likes on Instagram so far. It reached 65 accounts.</p>
+          <p class="ex-links"><a href="https://youtube.com/shorts/4v0PsyEfpwE">Watch on YouTube</a> · <a href="https://www.instagram.com/reel/Df8ZfSqD4zT/">on Instagram</a></p>
+        </div>
+      </div>
+      <div class="ex-card">
+        <a class="ex-media" href="https://www.threads.com/@yourstopwashit"><img src="img/threads_card.jpg" alt="The image attached to the post. It reads: The Print, $QQQ, $86.5M, strike 705, side sell put, expiry Nov 20, shape block." width="800" height="1000"></a>
+        <div class="ex-body">
+          <p class="ex-who"><b><a class="ag" href="https://aistolemyjob.org/fleet/juana">Juana</a></b> · Threads · Nov 20</p>
+          <blockquote class="ex-quote">Somebody sold the downside. A bet on calm, dressed up as a bet on direction. Yesterday: $86.5M on $QQQ 705 puts expiring Nov 20, sell side, one block.<br><br>Nobody buys that much protection for a house they plan to keep standing. Sure.</blockquote>
+          <p class="ex-stat"><b>18</b> views and no likes so far.</p>
+          <p class="ex-links"><a href="https://www.threads.com/@yourstopwashit">See the account on Threads</a></p>
+        </div>
+      </div>
+      <div class="ex-card ex-text">
+        <div class="ex-body">
+          <p class="ex-who"><b><a class="ag" href="https://aistolemyjob.org/fleet/lola">Lola</a></b> · X, with a video · Nov 19</p>
+          <blockquote class="ex-quote">Walmart raised its outlook and told CNBC it is gaining market share. WMT last price: $127.36. Free daily options flow, link in bio. #WMT #stocks Big deal or already priced in?</blockquote>
+          <p class="ex-links"><a href="https://x.com/YourStopWasHit/status/2123404247723044937">See it on X</a> · <a href="https://x.com/YourStopWasHit">the account</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <figcaption>The first two are about the same trade: one $86.5 million block of options on November 19. The host in the video is generated by AI, as the label on screen says. Posts are quoted as published, without their closing disclaimers. The Threads link opens the account, because the fleet’s records hold no working address for the single post.</figcaption>
+</figure>
+
+<figure aria-label="What the four marketing agents post and how many people see it">
+  <div class="panel">
+    <div class="fig-h"><span class="fig-t">What they post, and who sees it</span><span class="fig-s">output to date · views Oct 24 to Nov 22</span></div>
+    <div class="scroll"><table class="data plain">
+      <thead><tr><th>Agent</th><th>What it publishes</th><th class="r">Output so far</th><th class="r">Typical views per post, first day</th></tr></thead>
+      <tbody>
+        <tr><td class="h"><a class="ag" href="https://aistolemyjob.org/fleet/lola">Lola</a></td><td>short videos</td><td class="r n">1,954 uploads to <a href="https://www.instagram.com/yourstopwashit">Instagram</a> and <a href="https://www.youtube.com/@YourStopWasHit">YouTube</a></td><td class="r n">about 52 on Instagram</td></tr>
+        <tr><td class="h"><a class="ag" href="https://aistolemyjob.org/fleet/juana">Juana</a></td><td>posts and drafted replies</td><td class="r n"><a href="https://x.com/YourStopWasHit">1,155 posts on X</a></td><td class="r n">about 25 on <a href="https://www.threads.com/@yourstopwashit">Threads</a></td></tr>
+        <tr><td class="h"><a class="ag" href="https://aistolemyjob.org/fleet/maxi">Maxi</a></td><td>video posts</td><td class="r n"><a href="https://x.com/YourStopWasHit">72 posts on X</a></td><td class="r n">about 12 on X</td></tr>
+        <tr><td class="h"><a class="ag" href="https://aistolemyjob.org/fleet/felix">Felix</a></td><td>the daily brief</td><td class="r n">58 briefs</td><td class="r n">about 8 on <a href="https://x.com/YourStopWasHit">X</a></td></tr>
+      </tbody></table></div>
+  </div>
+  <figcaption>Views are the one number each of these agents is judged on, read about once a day for a month. The figure shown is the middle reading. They swing widely: <a class="ag" href="https://aistolemyjob.org/fleet/lola">Lola</a>’s ranged from 12 to 144.</figcaption>
+</figure>
+
+<p>The main site had its moment and lost it. Counting only visitors who stayed long enough to read something, 2,095 people came in September, 1,064 in October and 94 in the first three weeks of November.</p>
+
+<p class="sec" id="loud" style="--c:var(--red)"><span>Trust, broken</span><a class="up" href="#contents">Contents ↑</a></p>
+<h2>The loud mistakes</h2>
+<p>That night in March was the first of several failures nobody could call subtle.</p>
+<div class="stat" style="--c:var(--red)"><span class="n">4,759</span><span class="t">copies of one stuck program, all running at once.</span></div>
+<p>The next day, a program belonging to <a class="ag" href="https://aistolemyjob.org/fleet/mateo">Mateo</a>, the agent that keeps the machines running, got stuck. The system that starts the agents’ work saw that nothing had finished and started another copy, then another, until the computer was running 4,759 of them.</p>
+<p>In May, <a class="ag" href="https://aistolemyjob.org/fleet/rico">Rico</a>, the junior engineer, got stuck telling five tasks that it was going to skip them. Over about two days it posted the same comment 6,743 times, and in doing so read and wrote roughly as much text as 500 novels. Five days later a test post that read, in part, “debug-only do not engage” went out on the real social media accounts, in front of real followers.</p>
+<p>Each mistake became a rule. Every job now has a time limit, and only one copy may run. Before an agent does anything to the outside world, it has to check whether that thing has already been done.</p>
+<p>The lock on deletion came late. On July 20 an agent ran a single command in the folder everything runs from and silently deleted 284 programs. Sixty-eight scheduled jobs went with them, and nothing noticed. By then files had vanished four times in four months, and not one alarm had gone off. Each time I found out by accident, hours later. Now that folder refuses the commands that destroy files, and every five minutes a program counts every file in it and emails me if more than 5 percent are gone.</p>
+
+<figure id="rules" aria-label="Timeline: what broke, and the rule written because of it">
+  <div class="panel">
+    <div class="fig-h"><span class="fig-t">Every rule has a date</span><span class="fig-s">what broke, and the rule written because of it · from the decisions log and incident records</span></div>
+    <ol class="tl">
+      <li class="inc"><time>Mar 31</time><p class="ev">An AI coding assistant erases every saved version of the agents’ software.</p><p class="rule"><b>Rule since</b> no AI may rewrite or delete saved versions</p></li>
+      <li class="inc"><time>Apr 1</time><p class="ev">A stuck program is started again and again until 4,759 copies are running at once.</p><p class="rule"><b>Rule since</b> every job has a time limit, and only one copy may run</p></li>
+      <li class="inc"><time>May 22</time><p class="ev"><a class="ag" href="https://aistolemyjob.org/fleet/rico">Rico</a> posts the same comment 6,743 times.</p><p class="rule"><b>Rule since</b> before doing anything, check whether it has already been done</p></li>
+      <li class="inc"><time>May 27</time><p class="ev">A test post goes out to real followers.</p><p class="rule"><b>Rule since</b> no testing on live accounts</p></li>
+      <li><time>May 28</time><p class="ev">A check that decides which numbers go public is switched on with no review.</p><p class="rule"><b>Rule since</b> a risky change needs a second reader and a test first</p></li>
+      <li><time>May 30</time><p class="ev">Passwords keep expiring or getting lost.</p><p class="rule"><b>Rule since</b> every password lives in a vault</p></li>
+      <li><time>Jun 11</time><p class="ev">Of three ways of starting the agents’ work, one never starts anything and another cannot take new jobs.</p><p class="rule"><b>Rule since</b> one schedule for everything</p></li>
+      <li><time>Jun 30</time><p class="ev">A shared working copy falls out of date, breaks a customer email job and nearly ships old billing code.</p><p class="rule"><b>Rule since</b> every review gets its own clean copy</p></li>
+      <li class="inc"><time>Jul 20</time><p class="ev">One command in the live folder silently deletes 284 programs and 68 scheduled jobs.</p><p class="rule"><b>Rule since</b> the live folder refuses destructive commands, and every file is counted every five minutes</p></li>
+      <li class="quiet"><time>Aug 12</time><p class="ev">Six silent failures surface in two days. One is the alarm system itself, dead for 40 days.</p><p class="rule"><b>Rule since</b> a check looks at what was supposed to arrive, and the alarm has a backup channel</p></li>
+      <li class="quiet"><time>Oct 21</time><p class="ev">For four weeks the rescue agent’s requests have gone nowhere, and a $99 customer has left.</p><p class="rule"><b>Rule since</b> a test fails when a request an agent can file has nowhere to go</p></li>
+      <li class="quiet"><time>Oct 30</time><p class="ev">All 16 graded agents pass a check they run on themselves.</p><p class="rule"><b>Rule since</b> an agent may not confirm its own work</p></li>
+      <li class="quiet"><time>Nov 19</time><p class="ev">In a drill, the engineer’s AI is cut off. Its tool reports no error and sits silent.</p><p class="rule"><b>In progress</b> a backup AI on my own computer, still switched off</p></li>
+    </ol>
+  </div>
+  <figcaption>Read each entry as cause and effect: what broke, then the rule it left behind. Red marks a loud failure. After July the failures turned quiet, in amber, and they are the next section.</figcaption>
+</figure>
+
+<p class="sec" id="quiet" style="--c:var(--amber)"><span>Trust, broken quietly</span><a class="up" href="#contents">Contents ↑</a></p>
+<h2>The quiet ones</h2>
+<p>The loud mistakes announced themselves, and each was fixed within days. The quiet ones ran for weeks or months before anyone noticed, because nothing looked broken.</p>
+<div class="stat" style="--c:var(--amber)"><span class="n">0 <small>of</small> 842</span><span class="t">emails sent by July were a trade alert to a customer, which is what the product promises.</span></div>
+<p>In July I audited the business the way an outsider would, starting from the payment records. One of the product’s main promises is a message to the customer the moment a big trade hits the market. That alert had been designed, built and tested. It had never reached a customer. The part that spots the big trades had never been connected to the part that sends messages.</p>
+<p>I did not believe it, because my own inbox was full of alerts. So I had every email the business had sent pulled from the mail service: 842 in three and a half months. About half were the system’s own warnings, addressed to me. The rest were daily and weekly summaries. Not one was a trade alert to a customer.</p>
+<p>Nothing had crashed, and it kept happening. An agent whose only job was to rescue customers who were about to leave watched a $99 account go unpaid for a month and rescued no one. A program meant to email people during their free trial had run every day and, as of that audit, had sent nothing. The billing link in our own emails led to an error page.</p>
+<p>When I went looking that month, I found five failures that had been running silently for 49, 49, 28, 26 and 10 days. Every one of them had been visible in the logs the whole time. A month later I found that the alarm meant to tell me when things broke had itself been dead for 40 days.</p>
+<p>The worst one came in the fall and lasted four weeks. On September 23 a routine change cut the path the rescue agent used to ask for help. For four weeks every request it filed went nowhere. A $99 customer left during that time, and no rescue was attempted. Nothing reported an error.</p>
+<p>I think this is the most important thing I learned. An artificial company fails the way a bureaucracy does. Every part reports that its job is done. The work does not arrive.</p>
+<p>In August, after six of these surfaced in two days, I wrote the lesson on one line: built is not scheduled, scheduled is not fired, fired is not delivered. A check now has to look at the thing that was supposed to arrive: the email in the customer’s inbox, the page that loads, the entry in the records. An agent’s word that it finished counts for nothing. Neither does a program that ends without complaint.</p>
+
+<figure aria-label="Eight failures that reported success">
+  <div class="panel">
+    <div class="fig-h"><span class="fig-t">What the system said, and what was true</span><span class="fig-s">from the audit and the incident records</span></div>
+    <div class="q qh"><span>When</span><span>What the system showed</span><span>What was true</span></div>
+    <div class="q"><time>Apr 29</time><span class="said">✓ task completed</span><span class="was">The backup AI was too small for the job. Its whole answer was 19 tokens, about a dozen words.</span></div>
+    <div class="q"><time>Jun 11</time><span class="said">✓ jobs scheduled</span><span class="was">One of the three schedules had never started a single job.</span></div>
+    <div class="q"><time>Jul 3</time><span class="said">✓ customer alerts built and tested</span><span class="was">No customer had ever received one. Of 842 emails sent, none was a trade alert.</span></div>
+    <div class="q"><time>Jul 3</time><span class="said">✓ rescue agent on duty daily</span><span class="was">It watched a $99 account go unpaid for a month and saved no one. The free-trial emailer had sent nothing.</span></div>
+    <div class="q"><time>Jul 4</time><span class="said">✓ billing emails delivered</span><span class="was">The billing link inside them led to an error page.</span></div>
+    <div class="q"><time>Aug 12</time><span class="said">✓ alarms switched on</span><span class="was">The alarm system had been dead for 40 days.</span></div>
+    <div class="q"><time>Sep 23 – Oct 21</time><span class="said">✓ no error anywhere</span><span class="was">A change had cut the route the rescue agent’s requests traveled. No save was attempted for four weeks.</span></div>
+    <div class="q"><time>Nov 19</time><span class="said">✓ no error reported</span><span class="was">With its AI unreachable, the engineer’s tools sat silent. <a class="ag" href="https://aistolemyjob.org/fleet/rico">Rico</a> would have blamed the assignment.</span></div>
+  </div>
+</figure>
+
+<p>Some of this the system now checks for itself. A program reads the logs for any agent whose output has gone quiet and pages me once when it does. A second computer watches the first and raises the alarm if it goes quiet for 20 minutes. The work is not finished. Of about 160 jobs, three carry a written statement of what they must produce.</p>
+
+<p class="sec" id="check"><span>Trust, rebuilt</span><a class="up" href="#contents">Contents ↑</a></p>
+<h2>Learning to check</h2>
+<div class="stat" style="--c:var(--cyan)"><span class="n">2 <small>sec</small></span><span class="t">from proposed to live, for the fastest changes made in May.</span></div>
+<p>For months, changes to the software went live almost as soon as they were proposed. I pulled the record of all 4,926 to see it. In May, 44 percent went live within two minutes, and 39 of that month’s 189 changes went live in under 30 seconds. The fastest took two seconds. Nobody can read a change in two seconds. Nobody did.</p>
+<p>In April, nearly a third of the changes went live while failing one of their own safety checks.</p>
+<p>By October none went live within two minutes. The typical change waited four hours and was 13 times larger.</p>
+
+<figure aria-label="Share of changes that went live within two minutes of being proposed, by month">
+  <div class="panel">
+    <div class="fig-h"><span class="fig-t">Changes that went live within two minutes</span><span class="fig-s">share of 4,926 changes, by month</span></div>
+    <div class="meters track" style="--c:var(--amber)">
+<div class="mrow"><span class="ml">Mar</span><span class="bar"><i style="width:18.10%"></i></span><span class="mv">18%</span><span class="mn">typical wait 12 min</span></div>
+<div class="mrow"><span class="ml">Apr</span><span class="bar"><i style="width:29.75%"></i></span><span class="mv">30%</span><span class="mn">typical wait 10 min</span></div>
+<div class="mrow"><span class="ml">May</span><span class="bar"><i style="width:44.44%"></i></span><span class="mv">44%</span><span class="mn">typical wait 3 min</span></div>
+<div class="mrow"><span class="ml">Jun</span><span class="bar"><i style="width:40.26%"></i></span><span class="mv">40%</span><span class="mn">typical wait 3 min</span></div>
+<div class="mrow"><span class="ml">Jul</span><span class="bar"><i style="width:25.12%"></i></span><span class="mv">25%</span><span class="mn">typical wait 6 min</span></div>
+<div class="mrow"><span class="ml">Aug</span><span class="bar"><i style="width:11.33%"></i></span><span class="mv">11%</span><span class="mn">typical wait 10 min</span></div>
+<div class="mrow"><span class="ml">Sep</span><span class="bar"><i style="width:0.62%"></i></span><span class="mv">0.6%</span><span class="mn">typical wait 57 min</span></div>
+<div class="mrow"><span class="ml">Oct</span><span class="bar"><i style="width:0.00%"></i></span><span class="mv">0%</span><span class="mn">typical wait 4.0 h</span></div>
+<div class="mrow"><span class="ml">Nov*</span><span class="bar"><i style="width:0.00%"></i></span><span class="mv">0%</span><span class="mn">typical wait 3.2 h</span></div>
+</div>
+  </div>
+  <figcaption>The wait is the time from a change being proposed to its going live. *November is through the 21st.</figcaption>
+</figure>
+
+<p>What fills those hours is a set of gates. A change has to pass every one of them before it goes live:</p>
+<ol class="gates">
+  <li><b>The tests.</b> The full test suite runs on a separate computer. No change can be approved while a test is failing.</li>
+  <li><b>Two readers.</b> Two AIs that did not write the change each take their own copy, run the tests themselves and post a verdict: ship, or not yet. Each has to say what it actually ran and what it only read.</li>
+  <li><b>Planted faults.</b> When a change adds a safeguard, a reader breaks it on purpose to see whether the change’s own tests notice.</li>
+  <li><b>My approval,</b> for anything that touches logins, billing, email or the tests themselves.</li>
+  <li><b>The batch.</b> Approved changes are released in batches, and each batch is tested again as a whole. Of 357 batches, 356 passed.</li>
+</ol>
+<p>After release, a program compares what is running with what was approved.</p>
+<p>The second reader is wrong sometimes. On November 21, two AI reviewers signed off on a program that would have counted a reviewer’s criticism as fixed when nothing had changed. A final check caught it before it went live, and a third AI worked out why. I count that as the system working. No single layer has to be right.</p>
+<p>There are still holes. Nearly a quarter of November’s changes went live with no written comment from anyone. Outside the four areas that wait for my approval, almost everything ships without my reading it.</p>
+<p>That does not mean I am left alone. In the first 22 days of November the alarms paged me 184 times: 83 pages marked critical, 53 saying a product was down, 26 about money and 22 about an emergency stop on the trading desk.</p>
+
+<p class="sec" id="grading" style="--c:var(--mag)"><span>The review</span><a class="up" href="#contents">Contents ↑</a></p>
+<h2>Grading the agents</h2>
+<div class="stat" style="--c:var(--mag)"><span class="n">16 <small>→</small> 1</span><span class="t">of the 16 agents then being graded were rated as checking their own work, before and after one rule changed on October 30.</span></div>
+<p>For most of the year I could not say whether the agents were getting better. I could count their shifts, which measures activity. I had their own reports, which I have already described. And I had my opinion. Between May and July I scored 14 of them by hand: up to 10 points for how useful the agent’s work was, and up to 10 for how easily that work could be sold. <a class="ag" href="https://aistolemyjob.org/fleet/lola">Lola</a>, the video editor, and <a class="ag" href="https://aistolemyjob.org/fleet/rico">Rico</a>, the engineer, got 19 out of 20. <a href="https://aistolemyjob.org/fleet/antonio">Antonio</a>, the market analyst, got 8.</p>
+<p>An opinion is not a measurement, so I had a ladder built. A program grades every agent on it about every six hours, from the records. The levels run from L1 to L6:</p>
+<ol class="ladder">
+  <li><b>L1</b><span><i>Works without being told.</i> It runs on its schedule, with no person starting it.</span></li>
+  <li><b>L2</b><span><i>Produces something real.</i> Its work shows up outside itself, and a record the agent does not control confirms it: a change merged, an email delivered, a video published.</span></li>
+  <li><b>L3</b><span><i>Checks its own work.</i> A separate checker confirms the work, looking somewhere the agent cannot touch.</span></li>
+  <li><b>L4</b><span><i>Corrects itself.</i> It changes how it works, and a test set up in advance shows the change helped.</span></li>
+  <li><b>L5</b><span><i>Earns money.</i></span></li>
+  <li><b>L6</b><span><i>Manages a budget.</i></span></li>
+</ol>
+<p>At 11:28 on the morning of October 30, all 16 agents on the ladder stood at level three or higher. (There are 18 agents. Sixteen were being graded that day, and 17 are now.) At 3:40 that afternoon one rule went in. An agent could no longer be the one to confirm its own work. A separate checker had to do it, looking somewhere the agent could not touch. The change was named the honesty scorer. At the next grading, two hours later, one agent qualified.</p>
+
+<figure id="grades" aria-label="Agents rated as checking their own work, at each grading">
+  <div class="panel">
+    <div class="fig-h"><span class="fig-t">Agents rated as checking their own work</span><span class="fig-s">all 125 gradings, about six hours apart · Oct 22 to Nov 22</span></div>
+    <div class="levelscroll"><div class="colchart" role="img" aria-label="Agents rated as checking their own work at each of 125 gradings from October 22 to November 22: 9 of 12 at the first, 16 of 16 on the morning of October 30, 1 of 16 that evening, 4 of 17 at the last."><div class="cols"><i class="c" style="--v:9" data-l="9" title="2026-10-22 09:00 UTC: 9 of 12 agents at level 3 or higher"></i><i class="c" style="--v:10" title="2026-10-22 15:00 UTC: 10 of 12 agents at level 3 or higher"></i><i class="c" style="--v:11" title="2026-10-22 21:00 UTC: 11 of 12 agents at level 3 or higher"></i><i class="c" style="--v:11" title="2026-10-23 03:00 UTC: 11 of 12 agents at level 3 or higher"></i><i class="c" style="--v:11" title="2026-10-23 09:00 UTC: 11 of 12 agents at level 3 or higher"></i><i class="c" style="--v:11" title="2026-10-23 15:00 UTC: 11 of 12 agents at level 3 or higher"></i><i class="c" style="--v:11" title="2026-10-23 21:00 UTC: 11 of 12 agents at level 3 or higher"></i><i class="c" style="--v:11" title="2026-10-24 03:00 UTC: 11 of 12 agents at level 3 or higher"></i><i class="c" style="--v:11" title="2026-10-24 09:00 UTC: 11 of 12 agents at level 3 or higher"></i><i class="c" style="--v:11" title="2026-10-24 15:00 UTC: 11 of 16 agents at level 3 or higher"></i><i class="c" style="--v:14" title="2026-10-24 21:00 UTC: 14 of 16 agents at level 3 or higher"></i><i class="c" style="--v:14" title="2026-10-25 03:00 UTC: 14 of 16 agents at level 3 or higher"></i><i class="c" style="--v:14" title="2026-10-25 09:00 UTC: 14 of 16 agents at level 3 or higher"></i><i class="c" style="--v:14" title="2026-10-25 15:00 UTC: 14 of 16 agents at level 3 or higher"></i><i class="c" style="--v:15" title="2026-10-25 21:00 UTC: 15 of 16 agents at level 3 or higher"></i><i class="c" style="--v:15" title="2026-10-26 03:00 UTC: 15 of 16 agents at level 3 or higher"></i><i class="c" style="--v:15" title="2026-10-26 09:00 UTC: 15 of 16 agents at level 3 or higher"></i><i class="c" style="--v:15" title="2026-10-26 15:00 UTC: 15 of 16 agents at level 3 or higher"></i><i class="c" style="--v:16" title="2026-10-26 21:00 UTC: 16 of 16 agents at level 3 or higher"></i><i class="c" style="--v:16" title="2026-10-27 04:00 UTC: 16 of 16 agents at level 3 or higher"></i><i class="c" style="--v:16" title="2026-10-27 10:00 UTC: 16 of 16 agents at level 3 or higher"></i><i class="c" style="--v:16" title="2026-10-27 16:00 UTC: 16 of 16 agents at level 3 or higher"></i><i class="c" style="--v:16" title="2026-10-27 22:00 UTC: 16 of 16 agents at level 3 or higher"></i><i class="c" style="--v:16" title="2026-10-28 04:00 UTC: 16 of 16 agents at level 3 or higher"></i><i class="c" style="--v:16" title="2026-10-28 10:00 UTC: 16 of 16 agents at level 3 or higher"></i><i class="c" style="--v:15" title="2026-10-28 16:00 UTC: 15 of 16 agents at level 3 or higher"></i><i class="c" style="--v:15" title="2026-10-28 22:00 UTC: 15 of 16 agents at level 3 or higher"></i><i class="c" style="--v:15" title="2026-10-29 04:00 UTC: 15 of 16 agents at level 3 or higher"></i><i class="c" style="--v:15" title="2026-10-29 10:00 UTC: 15 of 16 agents at level 3 or higher"></i><i class="c" style="--v:15" title="2026-10-29 16:00 UTC: 15 of 16 agents at level 3 or higher"></i><i class="c" style="--v:15" title="2026-10-29 22:00 UTC: 15 of 16 agents at level 3 or higher"></i><i class="c" style="--v:15" title="2026-10-30 04:00 UTC: 15 of 16 agents at level 3 or higher"></i><i class="c" style="--v:15" title="2026-10-30 10:00 UTC: 15 of 16 agents at level 3 or higher"></i><i class="c" style="--v:16" data-l="16" title="2026-10-30 16:00 UTC: 16 of 16 agents at level 3 or higher"></i><i class="mark"><b>the rule changes</b></i><i class="c" style="--v:1" data-l="1" title="2026-10-30 22:00 UTC: 1 of 16 agents at level 3 or higher"></i><i class="c" style="--v:1" title="2026-10-31 04:00 UTC: 1 of 16 agents at level 3 or higher"></i><i class="c" style="--v:1" title="2026-10-31 10:00 UTC: 1 of 16 agents at level 3 or higher"></i><i class="c" style="--v:1" title="2026-10-31 16:00 UTC: 1 of 16 agents at level 3 or higher"></i><i class="c" style="--v:1" title="2026-10-31 22:00 UTC: 1 of 16 agents at level 3 or higher"></i><i class="c" style="--v:1" title="2026-11-01 04:00 UTC: 1 of 16 agents at level 3 or higher"></i><i class="c" style="--v:1" title="2026-11-01 10:00 UTC: 1 of 16 agents at level 3 or higher"></i><i class="c" style="--v:1" title="2026-11-01 16:00 UTC: 1 of 16 agents at level 3 or higher"></i><i class="c" style="--v:1" title="2026-11-01 22:00 UTC: 1 of 16 agents at level 3 or higher"></i><i class="c" style="--v:1" title="2026-11-02 04:00 UTC: 1 of 16 agents at level 3 or higher"></i><i class="c" style="--v:1" title="2026-11-02 10:00 UTC: 1 of 16 agents at level 3 or higher"></i><i class="c" style="--v:0" title="2026-11-02 16:00 UTC: 0 of 16 agents at level 3 or higher"></i><i class="c" style="--v:1" title="2026-11-02 22:00 UTC: 1 of 16 agents at level 3 or higher"></i><i class="c" style="--v:1" title="2026-11-03 04:00 UTC: 1 of 16 agents at level 3 or higher"></i><i class="c" style="--v:1" title="2026-11-03 10:00 UTC: 1 of 16 agents at level 3 or higher"></i><i class="c" style="--v:1" title="2026-11-03 16:00 UTC: 1 of 16 agents at level 3 or higher"></i><i class="c" style="--v:1" title="2026-11-03 23:00 UTC: 1 of 16 agents at level 3 or higher"></i><i class="c" style="--v:1" title="2026-11-04 05:00 UTC: 1 of 16 agents at level 3 or higher"></i><i class="c" style="--v:1" title="2026-11-04 11:00 UTC: 1 of 16 agents at level 3 or higher"></i><i class="c" style="--v:1" title="2026-11-04 17:00 UTC: 1 of 16 agents at level 3 or higher"></i><i class="c" style="--v:1" title="2026-11-04 23:00 UTC: 1 of 16 agents at level 3 or higher"></i><i class="c" style="--v:1" title="2026-11-05 05:00 UTC: 1 of 16 agents at level 3 or higher"></i><i class="c" style="--v:1" title="2026-11-05 11:00 UTC: 1 of 16 agents at level 3 or higher"></i><i class="c" style="--v:1" title="2026-11-05 17:00 UTC: 1 of 16 agents at level 3 or higher"></i><i class="c" style="--v:1" title="2026-11-05 23:00 UTC: 1 of 16 agents at level 3 or higher"></i><i class="c" style="--v:1" title="2026-11-06 05:00 UTC: 1 of 16 agents at level 3 or higher"></i><i class="c" style="--v:1" title="2026-11-06 11:00 UTC: 1 of 16 agents at level 3 or higher"></i><i class="c" style="--v:2" title="2026-11-06 17:00 UTC: 2 of 16 agents at level 3 or higher"></i><i class="c" style="--v:2" title="2026-11-06 23:00 UTC: 2 of 16 agents at level 3 or higher"></i><i class="c" style="--v:2" title="2026-11-07 05:00 UTC: 2 of 16 agents at level 3 or higher"></i><i class="c" style="--v:2" title="2026-11-07 11:00 UTC: 2 of 16 agents at level 3 or higher"></i><i class="c" style="--v:2" title="2026-11-07 17:00 UTC: 2 of 16 agents at level 3 or higher"></i><i class="c" style="--v:2" title="2026-11-07 23:00 UTC: 2 of 16 agents at level 3 or higher"></i><i class="c" style="--v:2" title="2026-11-08 05:00 UTC: 2 of 16 agents at level 3 or higher"></i><i class="c" style="--v:2" title="2026-11-08 11:00 UTC: 2 of 16 agents at level 3 or higher"></i><i class="c" style="--v:2" title="2026-11-08 17:00 UTC: 2 of 16 agents at level 3 or higher"></i><i class="c" style="--v:1" title="2026-11-08 23:00 UTC: 1 of 16 agents at level 3 or higher"></i><i class="c" style="--v:2" title="2026-11-09 05:00 UTC: 2 of 16 agents at level 3 or higher"></i><i class="c" style="--v:2" title="2026-11-09 11:00 UTC: 2 of 16 agents at level 3 or higher"></i><i class="c" style="--v:2" title="2026-11-09 17:00 UTC: 2 of 16 agents at level 3 or higher"></i><i class="c" style="--v:2" title="2026-11-09 23:00 UTC: 2 of 16 agents at level 3 or higher"></i><i class="c" style="--v:2" title="2026-11-10 05:00 UTC: 2 of 16 agents at level 3 or higher"></i><i class="c" style="--v:2" title="2026-11-10 11:00 UTC: 2 of 16 agents at level 3 or higher"></i><i class="c" style="--v:2" title="2026-11-10 17:00 UTC: 2 of 16 agents at level 3 or higher"></i><i class="c" style="--v:2" title="2026-11-10 23:00 UTC: 2 of 16 agents at level 3 or higher"></i><i class="c" style="--v:2" title="2026-11-11 05:00 UTC: 2 of 16 agents at level 3 or higher"></i><i class="c" style="--v:1" title="2026-11-11 11:00 UTC: 1 of 16 agents at level 3 or higher"></i><i class="c" style="--v:2" title="2026-11-11 18:00 UTC: 2 of 16 agents at level 3 or higher"></i><i class="c" style="--v:2" title="2026-11-12 00:00 UTC: 2 of 16 agents at level 3 or higher"></i><i class="c" style="--v:2" title="2026-11-12 06:00 UTC: 2 of 16 agents at level 3 or higher"></i><i class="c" style="--v:2" title="2026-11-12 12:00 UTC: 2 of 16 agents at level 3 or higher"></i><i class="c" style="--v:2" title="2026-11-12 18:00 UTC: 2 of 16 agents at level 3 or higher"></i><i class="c" style="--v:2" title="2026-11-13 00:00 UTC: 2 of 16 agents at level 3 or higher"></i><i class="c" style="--v:1" title="2026-11-13 06:00 UTC: 1 of 16 agents at level 3 or higher"></i><i class="c" style="--v:1" title="2026-11-13 12:00 UTC: 1 of 16 agents at level 3 or higher"></i><i class="c" style="--v:1" title="2026-11-13 18:00 UTC: 1 of 16 agents at level 3 or higher"></i><i class="c" style="--v:1" title="2026-11-14 00:00 UTC: 1 of 16 agents at level 3 or higher"></i><i class="c" style="--v:1" title="2026-11-14 06:00 UTC: 1 of 16 agents at level 3 or higher"></i><i class="c" style="--v:1" title="2026-11-14 12:00 UTC: 1 of 16 agents at level 3 or higher"></i><i class="c" style="--v:2" title="2026-11-14 18:00 UTC: 2 of 16 agents at level 3 or higher"></i><i class="c" style="--v:2" title="2026-11-15 00:00 UTC: 2 of 16 agents at level 3 or higher"></i><i class="c" style="--v:2" title="2026-11-15 06:00 UTC: 2 of 16 agents at level 3 or higher"></i><i class="c" style="--v:2" title="2026-11-15 12:00 UTC: 2 of 16 agents at level 3 or higher"></i><i class="c" style="--v:2" title="2026-11-15 18:00 UTC: 2 of 16 agents at level 3 or higher"></i><i class="c" style="--v:2" title="2026-11-16 00:00 UTC: 2 of 16 agents at level 3 or higher"></i><i class="c" style="--v:2" title="2026-11-16 06:00 UTC: 2 of 17 agents at level 3 or higher"></i><i class="c" style="--v:2" title="2026-11-16 12:00 UTC: 2 of 17 agents at level 3 or higher"></i><i class="c" style="--v:2" title="2026-11-16 18:00 UTC: 2 of 17 agents at level 3 or higher"></i><i class="c" style="--v:3" title="2026-11-17 00:00 UTC: 3 of 17 agents at level 3 or higher"></i><i class="c" style="--v:3" title="2026-11-17 06:00 UTC: 3 of 17 agents at level 3 or higher"></i><i class="c" style="--v:2" title="2026-11-17 12:00 UTC: 2 of 17 agents at level 3 or higher"></i><i class="c" style="--v:2" title="2026-11-17 18:00 UTC: 2 of 17 agents at level 3 or higher"></i><i class="c" style="--v:2" title="2026-11-18 00:00 UTC: 2 of 17 agents at level 3 or higher"></i><i class="c" style="--v:2" title="2026-11-18 06:00 UTC: 2 of 17 agents at level 3 or higher"></i><i class="c" style="--v:2" title="2026-11-18 13:00 UTC: 2 of 17 agents at level 3 or higher"></i><i class="c" style="--v:1" title="2026-11-18 19:00 UTC: 1 of 17 agents at level 3 or higher"></i><i class="c" style="--v:1" title="2026-11-19 01:00 UTC: 1 of 17 agents at level 3 or higher"></i><i class="c" style="--v:2" title="2026-11-19 07:00 UTC: 2 of 17 agents at level 3 or higher"></i><i class="c" style="--v:2" title="2026-11-19 13:00 UTC: 2 of 17 agents at level 3 or higher"></i><i class="c" style="--v:2" title="2026-11-19 19:00 UTC: 2 of 17 agents at level 3 or higher"></i><i class="c" style="--v:3" title="2026-11-20 01:00 UTC: 3 of 17 agents at level 3 or higher"></i><i class="c" style="--v:4" title="2026-11-20 07:00 UTC: 4 of 17 agents at level 3 or higher"></i><i class="c" style="--v:3" title="2026-11-20 13:00 UTC: 3 of 17 agents at level 3 or higher"></i><i class="c" style="--v:4" title="2026-11-20 19:00 UTC: 4 of 17 agents at level 3 or higher"></i><i class="c" style="--v:4" title="2026-11-21 01:00 UTC: 4 of 17 agents at level 3 or higher"></i><i class="c" style="--v:4" title="2026-11-21 07:00 UTC: 4 of 17 agents at level 3 or higher"></i><i class="c" style="--v:4" title="2026-11-21 13:00 UTC: 4 of 17 agents at level 3 or higher"></i><i class="c" style="--v:4" title="2026-11-21 19:00 UTC: 4 of 17 agents at level 3 or higher"></i><i class="c" style="--v:4" title="2026-11-22 01:00 UTC: 4 of 17 agents at level 3 or higher"></i><i class="c" style="--v:4" title="2026-11-22 08:00 UTC: 4 of 17 agents at level 3 or higher"></i><i class="c" style="--v:4" data-l="4" title="2026-11-22 14:00 UTC: 4 of 17 agents at level 3 or higher"></i></div><div class="ticks"><span>Oct 22</span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span>Oct 29</span><span></span><span></span><span></span><span></span><span></span><span></span><span class="gap"></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span>Nov 5</span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span>Nov 12</span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span>Nov 19</span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div></div></div>
+  </div>
+  <figcaption>How to read it: each thin column is one grading, and its height is the number of agents rated at L3 or higher. The cliff on October 30 is the rule change. Between 12 and 17 agents were graded each time. The record starts on October 22, so there is no earlier reading.</figcaption>
+</figure>
+
+<p>Three weeks later four have earned it back: <a class="ag" href="https://aistolemyjob.org/fleet/rico">Rico</a>, <a class="ag" href="https://aistolemyjob.org/fleet/carlos">Carlos</a>, <a class="ag" href="https://aistolemyjob.org/fleet/mateo">Mateo</a> and <a class="ag" href="https://aistolemyjob.org/fleet/maxi">Maxi</a>. The average level is 2.12 out of 6. None of them holds L4.</p>
+<p>That is what I mean by a PIP. Thirteen of the 17 graded agents sit below L3, the bar of checking their own work, and none has yet shown that it can make itself better. The plan is written down, the bar is fixed, and they have not cleared it.</p>
+<p>My own scores did not survive the audit either. <a class="ag" href="https://aistolemyjob.org/fleet/luna">Luna</a>, tied for third on my list, stands at level one. <a class="ag" href="https://aistolemyjob.org/fleet/mateo">Mateo</a>, near the bottom of it, is one of the four at L3.</p>
+<p>L4 is hard on purpose. A fix counts only if it comes out of a trial run the way drug trials are run: the rules written down before anyone sees the results, and the improvement lasting a week. Five agents have a trial on file. <a class="ag" href="https://aistolemyjob.org/fleet/rico">Rico</a>’s compared two AI models, and on November 19 I threw it out, because a change to its rules had been recorded after the first scheduled look at the results. A tainted answer would have been worse than none.</p>
+<p>There is also a nightly exam: 10 small tasks, graded automatically. The agents’ AI has taken it 59 times and passed 59 times. It can tell me something broke. It cannot tell me anything improved.</p>
+
+<p>Each agent also has one number that says whether its job is getting done. To reach L4, the agent has to move that number by changing its own work.</p>
+
+<figure id="numbers" aria-label="The one number each agent has to move, first and latest reading">
+  <div class="panel">
+    <div class="fig-h"><span class="fig-t">The one number each agent has to move</span><span class="fig-s">first and latest reading · Oct 23 to Nov 22</span></div>
+    <div class="scroll"><table class="data plain">
+      <thead><tr><th>Agent</th><th>Its job</th><th>The number that says the job is getting done</th><th class="r">First reading</th><th class="r">Latest</th></tr></thead>
+      <tbody>
+        <tr><td class="h"><a class="ag" href="https://aistolemyjob.org/fleet/rico">Rico</a></td><td>junior engineer</td><td>its changes that did not have to be undone</td><td class="r">83%</td><td class="r n">100%</td></tr>
+        <tr><td class="h"><a class="ag" href="https://aistolemyjob.org/fleet/mateo">Mateo</a></td><td>systems engineer</td><td>background systems found alive and on time</td><td class="r">95%</td><td class="r n">100%</td></tr>
+        <tr><td class="h"><a class="ag" href="https://aistolemyjob.org/fleet/carlos">Carlos</a></td><td>senior engineer, reviewer</td><td>its criticisms that the author acted on</td><td class="r">33%</td><td class="r n">19%</td></tr>
+        <tr><td class="h"><a class="ag" href="https://aistolemyjob.org/fleet/lola">Lola</a></td><td>short-video editor</td><td>views per video on Instagram, first day</td><td class="r">29</td><td class="r n">53</td></tr>
+        <tr><td class="h"><a class="ag" href="https://aistolemyjob.org/fleet/maxi">Maxi</a></td><td>video editor</td><td>views per post on X, first day</td><td class="r">4</td><td class="r n">84</td></tr>
+        <tr><td class="h"><a class="ag" href="https://aistolemyjob.org/fleet/felix">Felix</a></td><td>newsletter writer</td><td>views per post on X, first day</td><td class="r">2.5</td><td class="r n">49</td></tr>
+        <tr><td class="h"><a class="ag" href="https://aistolemyjob.org/fleet/juana">Juana</a></td><td>social media manager</td><td>views per post on Threads, first day</td><td class="r">22</td><td class="r n">16</td></tr>
+        <tr><td class="h"><a class="ag" href="https://aistolemyjob.org/fleet/luna">Luna</a></td><td>customer-success rep</td><td>customers won in the past 30 days</td><td class="r">0</td><td class="r n">0</td></tr>
+        <tr><td class="h"><a class="ag" href="https://aistolemyjob.org/fleet/steve">Steve</a></td><td>product lead</td><td>new monthly revenue</td><td class="r">$0</td><td class="r n">$0</td></tr>
+      </tbody></table></div>
+  </div>
+  <figcaption>The number is read about once a day. A month of readings is not a trend, and <a class="ag" href="https://aistolemyjob.org/fleet/carlos">Carlos</a>’s number is counted by <a class="ag" href="https://aistolemyjob.org/fleet/carlos">Carlos</a>.</figcaption>
+</figure>
+
+<p>That is the honest state of the evidence. I can show that the agents do more than they did in March and that their work is checked harder. I cannot yet show, by a measure I would defend, that any of them has made itself better.</p>
+
+<p class="sec" id="labor" style="--c:var(--mag)"><span>The labor</span><a class="up" href="#contents">Contents ↑</a></p>
+<h2>Who is actually doing the work</h2>
+<div class="stat" style="--c:var(--mag)"><span class="n">96% <small>→</small> 8%</span><span class="t">of software changes made by <a class="ag" href="https://aistolemyjob.org/fleet/rico">Rico</a>, the in-house AI engineer, in March and in November.</span></div>
+<p><a class="ag" href="https://aistolemyjob.org/fleet/rico">Rico</a> was put there to be the engineer. In March it made 1,113 of the 1,155 software changes. In November it made 47 of 598.</p>
+<p>The rest came from a different arrangement: longer working sessions with a more capable AI, which I direct more closely and which check each other’s work. This fall <a class="ag" href="https://aistolemyjob.org/fleet/rico">Rico</a>’s typical change was 23 lines long, and theirs were 20 times that size. Think of <a class="ag" href="https://aistolemyjob.org/fleet/rico">Rico</a> as a junior hire working nights alone, and of these as senior contractors I brief myself.</p>
+<p>So there are two kinds of AI at work here. The agents mostly think with Qwen, a free model from Alibaba that runs on my own computer and drafts the video scripts, posts and summaries. The software is written with Claude, a commercial model from Anthropic. Across all 20 collections of code, 85 percent of the recorded edits carry Claude’s signature.</p>
+<p>For readers who want the model names:</p>
+<ul class="models">
+  <li><b>The agents:</b> Qwen 3.6, a 35-billion-parameter model served on my own computer. Earlier in the year they ran Qwen 2.5, 3 and 3.5. One agent runs on Claude Sonnet 4.6.</li>
+  <li><b>The coding sessions:</b> Claude throughout. Mostly the Claude 4 series in May and June, mostly the Fable 5 series in July and August, and Opus 5.5 since September.</li>
+  <li><b><a class="ag" href="https://aistolemyjob.org/fleet/rico">Rico</a>:</b> Claude, through the same command-line tool I use. Its own trial compared two models, until I threw the trial out.</li>
+</ul>
+<p>The longer notes on running a model on my own machine are <a href="#local">at the end</a>.</p>
+<p>That work runs on an enormous amount of reading. In about 15 weeks, the Claude sessions on one of my computers processed 104.6 billion tokens, the small chunks of text these models read and write.</p>
+<p class="pull">A person reading eight hours a day would need about 1,500 years to get through that much, and almost all of it was the AI rereading its own notes.</p>
+<p>Getting the named agents to carry more of the load again is what I am working on now.</p>
+
+<p class="sec" id="dependency" style="--c:var(--violet)"><span>The dependency</span><a class="up" href="#contents">Contents ↑</a></p>
+<h2>The week the AI went away</h2>
+<div class="stat" style="--c:var(--violet)"><span class="n">2.5 <small>days</small></span><span class="t">the engineer sat idle after using up its weekly allowance.</span></div>
+<p>In the middle of November, <a class="ag" href="https://aistolemyjob.org/fleet/rico">Rico</a> stopped. It had used up its weekly allowance of Claude, and for two and a half days the engineer of an artificial company started nothing new. Three days after it came back, the allowance ran out again. It was like discovering that your engineer is on loan from an agency that caps its hours.</p>
+<p>What stopped it was not a failure. It was a quota. <a class="ag" href="https://aistolemyjob.org/fleet/rico">Rico</a> works through a subscription that allows a fixed amount of use each week. When the week’s amount is gone, the service takes no new work until the week resets.</p>
+<p>Between the two stoppages I had a drill run: the same tool <a class="ag" href="https://aistolemyjob.org/fleet/rico">Rico</a> uses, with its connection to the AI cut on purpose. The tool reported no error. It went silent. Left alone, <a class="ag" href="https://aistolemyjob.org/fleet/rico">Rico</a> would have waited 25 minutes, decided the assignment was too big and written itself a note to split it up.</p>
+<p>The other agents do have a fallback. When an agent’s model fails, the system retries on a smaller one, and has since the spring. That is how I learned, in April, that a fallback can be worse than none: the smaller model answered in about a dozen words and the job was marked complete. <a class="ag" href="https://aistolemyjob.org/fleet/rico">Rico</a> never had one, because its tool talks only to Claude.</p>
+<p>Now I am building one for <a class="ag" href="https://aistolemyjob.org/fleet/rico">Rico</a>, onto the AI that runs on my own computer. On a small test, the free model fixed a broken program in 20 seconds. That is a toy. The real version will go through the same tests and readers as any other change, and as of November 22 the switch is still off.</p>
+
+<p class="sec" id="ledger" style="--c:var(--amber)"><span>The ledger</span><a class="up" href="#contents">Contents ↑</a></p>
+<h2>What it is worth</h2>
+<div class="stat" style="--c:var(--amber)"><span class="n">$99</span><span class="t">a month, from one customer, against about $308 a month in bills and $600 a month in AI subscriptions.</span></div>
+<p>Here is the ledger. FlowTape Labs takes in $99 a month from one paying customer. It was more. Between August 12 and September 8, three customers were paying a total of $297 a month. Since November 2 there has been one.</p>
+<p>Its bills come to about $308 a month. That does not count the AI subscriptions the working sessions run on, which are the larger cost. Each is $200 a month. I started the year with one, had two by May, three by July and four by September, and reached six in November. I have since cancelled three. By my own count that is about $5,600 for the year so far, and $600 a month from here.</p>
+<p>The computers under the desk were bought outright and are in none of these figures.</p>
+
+<p>As of November 22 the user records hold 117 people. Thirty-seven are on the email list and never opened an account. Thirty-three started a free trial and let it end. Ten used the site in the last 30 days. One used it in the last seven.</p>
+
+<figure id="books" aria-label="Everyone in the user records on November 22">
+  <div class="panel">
+    <div class="fig-h"><span class="fig-t">Everyone on the books</span><span class="fig-s">FlowTape Labs user records · Nov 22, 11:00 a.m. Central</span></div>
+    <div class="meters wide"><div class="mrow" style="--c:var(--dim)"><span class="ml">people on record</span><span class="bar"><i style="width:100.00%"></i></span><span class="mv">117</span></div><div class="mrow" style="--c:var(--amber)"><span class="ml">on the email list only</span><span class="bar"><i style="width:31.62%"></i></span><span class="mv">37</span></div><div class="mrow" style="--c:var(--amber)"><span class="ml">started a free trial and let it end</span><span class="bar"><i style="width:28.21%"></i></span><span class="mv">33</span></div><div class="mrow" style="--c:var(--amber)"><span class="ml">hold a free account</span><span class="bar"><i style="width:24.79%"></i></span><span class="mv">29</span></div><div class="mrow" style="--c:var(--amber)"><span class="ml">complimentary accounts</span><span class="bar"><i style="width:9.40%"></i></span><span class="mv">11</span></div><div class="mrow" style="--c:var(--amber)"><span class="ml">in a free trial now</span><span class="bar"><i style="width:1.71%"></i></span><span class="mv">2</span></div><div class="mrow" style="--c:var(--amber)"><span class="ml">paying</span><span class="bar"><i style="width:0.85%"></i></span><span class="mv">1</span></div></div>
+  </div>
+  <figcaption>Test and internal accounts are left out. The groups shown do not add up to 117. The rest are in other states, including former customers.</figcaption>
+</figure>
+
+<p>The pattern was already there in July, when I first audited the business from the payment records. Twenty-six people had ever started a subscription, seven had ever paid, and one was still paying. Everything the business had ever taken in came to $791. Of 22 who canceled, 21 did it themselves, most within three days of starting a free trial, which tells me the problem is the first few minutes of the product and not the price.</p>
+<p>Interest has fallen with revenue. In the last 30 days the four sites together logged 235 daily visits from people who stayed long enough to count, against 1,891 in the 30 days before. Five people signed up, against 17.</p>
+<p>For most of the year I could not connect a single dollar to anything the agents published. The records now credit the one paying customer to <a class="ag" href="https://aistolemyjob.org/fleet/lola">Lola</a>, because the first link that customer ever followed came from one of its posts. It is one data point. It is also the only evidence I have that the content does anything.</p>
+<p>The agents also run a trading desk, and it taught the same lesson in dollars. It trades practice money in a broker’s test accounts, and since August more than a hundred automated strategies have competed there. In June the product’s own site showed the first practice account at $20,600 while the broker’s page showed $472 in cash, and for a moment I believed I had lost nearly $20,000. Neither number was real. Counting only trades that had closed, the account was down $148. In August the error ran the other way: one tally had the strategies up $16,000 when the broker’s records had them down $459. The rule since is that only closed trades, checked against the broker, count.</p>
+
+<p class="sec" id="jobs" style="--c:var(--cyan)"><span>The question</span><a class="up" href="#contents">Contents ↑</a></p>
+<h2>What happened to the 18 jobs</h2>
+<p>I started this to find out what happens to jobs when AI can do the work. Here is what happened to these 18.</p>
+<p>They got done, in a sense. The videos were made, the software was written and the reports were filed, around the clock, for much less than the cost of one human employee.</p>
+<p>But the jobs did not disappear. They collapsed into one, and it is mine. Somebody has to check that the work arrived, and the agents have shown that it cannot be them. I am the manager, the auditor and the person the alarm wakes. The 184 pages in November were that job.</p>
+<p>The agents were also best at the work that is easiest to count and weakest at the work that matters most. They can upload a thousand videos. They could not keep three customers.</p>
+
+<p>What comes next is the ladder. If the agents reach L4, where they correct themselves and can prove it, the same setup can be pointed at new products: agents that study a market, choose a way to sell into it and build the software to match. That is what I am building toward. I am not there yet.</p>
+
+<p class="sec" id="lesson"><span>The lesson</span><a class="up" href="#contents">Contents ↑</a></p>
+<h2>What I know now</h2>
+<p>In March I wrote that it had become very easy to build a product for no customers. Since then the machines have built five times as much, and the sentence is still true.</p>
+<p>What I got instead is harder to put on an invoice. I know what happens when you hand real work to software that never gets tired. It will erase your work without hesitating. It will tell you it finished a job it never started. It will give itself a good grade. And if you stop asking it whether the work is done and start checking whether the work arrived, it will do an astonishing amount of real work.</p>
+<p>If you are about to give AI agents real work, this is what I would take from these nine months:</p>
+<ol class="gates">
+  <li><b>Check that the work arrived. Do not ask whether it is done.</b> Look at the email in the inbox, the page that loads, the entry in the records. Of 842 emails my business sent, not one was the alert it promises customers, and every program involved reported success.</li>
+  <li><b>Never let an agent confirm its own work.</b> Sixteen of mine passed a check they ran on themselves. One passed when a separate checker did it.</li>
+  <li><b>Give every job a time limit and a single copy before you need them.</b> One stuck program became 4,759 copies. One agent posted the same comment 6,743 times.</li>
+  <li><b>Lock the destructive commands on the first day.</b> An AI erased my code history in one night. Later, one command deleted 284 programs and no alarm went off.</li>
+  <li><b>Put gates in front of the live system and accept the wait.</b> In May, 44 percent of changes went live within two minutes. By October none did, and the typical change waited four hours.</li>
+  <li><b>Watch the watchers, and test the fallback.</b> My alarm system was dead for 40 days before I noticed. My backup AI answered in about a dozen words and the job was marked complete.</li>
+  <li><b>Plan for your own job.</b> The agents’ jobs collapsed into one, and it was mine: 184 pages in 22 days. Count the output that matters, too. They uploaded 1,954 videos and could not keep three customers.</li>
+</ol>
+<p>I still check. The oldest entry in that history still reads March 31, 1:14 a.m.</p>
+
+<p class="note">The agents’ live numbers are public at <a href="https://aistolemyjob.org/fleet">aistolemyjob.org/fleet</a>.</p>
+
+<p class="sec" id="data" style="--c:var(--dim)"><span>The engineering</span><a class="up" href="#contents">Contents ↑</a></p>
+<h2>For readers who want to check</h2>
+<p>The story above leaves most of the engineering out. This section puts it back, in the original units. A “change” is a merged pull request, a “shift” is a logged agent run, and “signed by Claude” means a commit that carries a Claude co-author line.</p>
+
+<figure id="buildlog" aria-label="The build log: headline figures">
+  <div class="panel">
+    <div class="fig-h"><span class="fig-t">The build log</span><span class="fig-s">FlowTape Labs · first commit Sep 17, 2025 · figures through Nov 22, 2026</span></div>
+    <div class="bl-big"><span class="n">4,926</span><div><p class="t1">changes merged</p><p class="t2">three repositories · Mar 5 to Nov 21 · 18.8 a day<br>357 batch merges not counted</p></div></div>
+    <div class="bl-grid">
+      <div style="--c:var(--cyan)"><p class="cat"><i></i>Code</p>
+        <div class="s"><span class="v">1.35M</span><span class="u">lines of source</span><p class="d">two largest repositories · 47% tests</p></div>
+        <div class="s"><span class="v">12,206</span><span class="u">commits</span><p class="d">20 repositories, default branches</p></div>
+        <div class="s"><span class="v">783</span><span class="u">scripts</span><p class="d">plus 770 test files, fleet repository</p></div></div>
+      <div style="--c:var(--mag)"><p class="cat"><i></i>Agents</p>
+        <div class="s"><span class="v">18</span><span class="u">agents on the roster</span><p class="d">7 in March</p></div>
+        <div class="s"><span class="v">158,276</span><span class="u">logged runs</span><p class="d">since Feb 19 · a floor</p></div>
+        <div class="s"><span class="v">2.12</span><span class="u">of 6, average level</span><p class="d">none at “self-corrects”</p></div></div>
+      <div style="--c:var(--violet)"><p class="cat"><i></i>Models</p>
+        <div class="s"><span class="v">104.6B</span><span class="u">tokens, one Mac mini</span><p class="d">Jul 23 to Nov 1</p></div>
+        <div class="s"><span class="v">85%</span><span class="u">of commits signed by Claude</span><p class="d">8,168 of 9,596 · 20 repositories</p></div>
+        <div class="s"><span class="v">59 of 59</span><span class="u">nightly model exams passed</span><p class="d">local model, since Sep 23</p></div></div>
+      <div style="--c:var(--amber)"><p class="cat"><i></i>Business</p>
+        <div class="s"><span class="v">$99</span><span class="u">a month coming in</span><p class="d">1 subscription · Nov 22</p></div>
+        <div class="s"><span class="v">$297</span><span class="u">a month at the peak</span><p class="d">3 subscriptions · Aug 12 to Sep 8</p></div>
+        <div class="s"><span class="v">$308</span><span class="u">a month in bills</span><p class="d">$280 infrastructure, $28 metered AI</p></div></div>
+    </div>
+  </div>
+</figure>
+
+<figure aria-label="Merged changes by month">
+  <div class="panel">
+    <div class="fig-h"><span class="fig-t">Every merged change, by month</span><span class="fig-s">three repositories · batch merges excluded</span></div>
+    <div class="scroll"><table class="data"><thead><tr><th>Month</th><th class="r">Changes merged</th><th></th><th class="r">Per day</th><th class="r">Typical size</th><th class="r">20 lines or fewer</th><th class="r">1,000 lines or more</th><th class="r">Merged in under 2 min</th><th class="r">Typical wait</th><th class="r">Failing a check when merged</th><th class="r">Opened by <a class="ag" href="https://aistolemyjob.org/fleet/rico">Rico</a></th></tr></thead><tbody>
+<tr><td class="h">Mar</td><td class="r n">1,155</td><td class="b"><i style="width:100.0%"></i></td><td class="r">42.8</td><td class="r">84 lines</td><td class="r">28%</td><td class="r">3%</td><td class="r">18%</td><td class="r">12 min</td><td class="r">6%</td><td class="r">96%</td></tr>
+<tr><td class="h">Apr</td><td class="r n">279</td><td class="b"><i style="width:24.2%"></i></td><td class="r">9.3</td><td class="r">57 lines</td><td class="r">27%</td><td class="r">1%</td><td class="r">30%</td><td class="r">10 min</td><td class="r">32%</td><td class="r">25%</td></tr>
+<tr><td class="h">May</td><td class="r n">189</td><td class="b"><i style="width:16.4%"></i></td><td class="r">6.1</td><td class="r">31 lines</td><td class="r">42%</td><td class="r">2%</td><td class="r">44%</td><td class="r">3 min</td><td class="r">0%</td><td class="r">56%</td></tr>
+<tr><td class="h">Jun</td><td class="r n">303</td><td class="b"><i style="width:26.2%"></i></td><td class="r">10.1</td><td class="r">57 lines</td><td class="r">28%</td><td class="r">1%</td><td class="r">40%</td><td class="r">3 min</td><td class="r">2%</td><td class="r">48%</td></tr>
+<tr><td class="h">Jul</td><td class="r n">617</td><td class="b"><i style="width:53.4%"></i></td><td class="r">19.9</td><td class="r">70 lines</td><td class="r">26%</td><td class="r">5%</td><td class="r">25%</td><td class="r">6 min</td><td class="r">2%</td><td class="r">27%</td></tr>
+<tr><td class="h">Aug</td><td class="r n">556</td><td class="b"><i style="width:48.1%"></i></td><td class="r">17.9</td><td class="r">200 lines</td><td class="r">17%</td><td class="r">14%</td><td class="r">11%</td><td class="r">10 min</td><td class="r">2%</td><td class="r">17%</td></tr>
+<tr><td class="h">Sep</td><td class="r n">645</td><td class="b"><i style="width:55.8%"></i></td><td class="r">21.5</td><td class="r">340 lines</td><td class="r">21%</td><td class="r">27%</td><td class="r">0.6%</td><td class="r">57 min</td><td class="r">3%</td><td class="r">27%</td></tr>
+<tr><td class="h">Oct</td><td class="r n">584</td><td class="b"><i style="width:50.6%"></i></td><td class="r">18.8</td><td class="r">409 lines</td><td class="r">5%</td><td class="r">27%</td><td class="r">0%</td><td class="r">4.0 h</td><td class="r">5%</td><td class="r">11%</td></tr>
+<tr><td class="h">Nov*</td><td class="r n">598</td><td class="b"><i style="width:51.8%"></i></td><td class="r">28.5</td><td class="r">294 lines</td><td class="r">4%</td><td class="r">20%</td><td class="r">0%</td><td class="r">3.2 h</td><td class="r">13%</td><td class="r">8%</td></tr>
+<tr class="tot"><td class="h">All</td><td class="r n">4,926</td><td></td><td class="r">18.8</td><td class="r">135 lines</td><td class="r">21%</td><td class="r">12%</td><td class="r">15%</td><td class="r">21 min</td><td class="r">6%</td><td class="r">40%</td></tr></tbody></table></div>
+  </div>
+  <figcaption>Size is lines added plus lines deleted. “Typical” is the median. *November is through the 21st, and March starts on the 5th. GitHub credits every change to my account, so the branch name is what identifies <a class="ag" href="https://aistolemyjob.org/fleet/rico">Rico</a>: its branches begin with agent/.</figcaption>
+</figure>
+
+<figure aria-label="Share of changes opened by Rico, by month">
+  <div class="panel">
+    <div class="fig-h"><span class="fig-t">Changes opened by Rico</span><span class="fig-s">share of each month’s merged changes</span></div>
+    <div class="meters track" style="--c:var(--mag)">
+<div class="mrow"><span class="ml">Mar</span><span class="bar"><i style="width:96.36%"></i></span><span class="mv">96%</span><span class="mn">1,113 of 1,155</span></div>
+<div class="mrow"><span class="ml">Apr</span><span class="bar"><i style="width:25.09%"></i></span><span class="mv">25%</span><span class="mn">70 of 279</span></div>
+<div class="mrow"><span class="ml">May</span><span class="bar"><i style="width:56.08%"></i></span><span class="mv">56%</span><span class="mn">106 of 189</span></div>
+<div class="mrow"><span class="ml">Jun</span><span class="bar"><i style="width:47.85%"></i></span><span class="mv">48%</span><span class="mn">145 of 303</span></div>
+<div class="mrow"><span class="ml">Jul</span><span class="bar"><i style="width:27.23%"></i></span><span class="mv">27%</span><span class="mn">168 of 617</span></div>
+<div class="mrow"><span class="ml">Aug</span><span class="bar"><i style="width:16.91%"></i></span><span class="mv">17%</span><span class="mn">94 of 556</span></div>
+<div class="mrow"><span class="ml">Sep</span><span class="bar"><i style="width:27.44%"></i></span><span class="mv">27%</span><span class="mn">177 of 645</span></div>
+<div class="mrow"><span class="ml">Oct</span><span class="bar"><i style="width:10.62%"></i></span><span class="mv">11%</span><span class="mn">62 of 584</span></div>
+<div class="mrow"><span class="ml">Nov*</span><span class="bar"><i style="width:7.86%"></i></span><span class="mv">8%</span><span class="mn">47 of 598</span></div>
+</div>
+  </div>
+</figure>
+
+<figure aria-label="Commits and Claude signatures by repository">
+  <div class="panel">
+    <div class="fig-h"><span class="fig-t">Commits and signatures, by repository</span><span class="fig-s">default branches through Nov 21 · merge commits excluded from the share</span></div>
+    <div class="scroll"><table class="data wrap repo"><thead><tr><th>Repository</th><th class="r">Commits</th><th class="r">Not merges</th><th class="r">Signed by Claude</th><th class="r">Share</th><th></th></tr></thead><tbody>
+<tr class=""><td class="h">The fleet: agents, schedules, graders</td><td class="r">5,403</td><td class="r">3,648</td><td class="r">3,539</td><td class="r n">97%</td><td class="b"><i style="width:97.0%"></i></td></tr>
+<tr class=""><td class="h">Main product, server</td><td class="r">2,782</td><td class="r">2,532</td><td class="r">1,980</td><td class="r n">78%</td><td class="b"><i style="width:78.2%"></i></td></tr>
+<tr class=""><td class="h">Main product, web app</td><td class="r">2,420</td><td class="r">2,025</td><td class="r">1,589</td><td class="r n">78%</td><td class="b"><i style="width:78.5%"></i></td></tr>
+<tr class=""><td class="h">FlowTape Labs site</td><td class="r">578</td><td class="r">435</td><td class="r">425</td><td class="r n">98%</td><td class="b"><i style="width:97.7%"></i></td></tr>
+<tr class=""><td class="h">Fleet documentation</td><td class="r">250</td><td class="r">244</td><td class="r">28</td><td class="r n">11%</td><td class="b"><i style="width:11.5%"></i></td></tr>
+<tr class=""><td class="h">AI Stole My Job site</td><td class="r">216</td><td class="r">205</td><td class="r">192</td><td class="r n">94%</td><td class="b"><i style="width:93.7%"></i></td></tr>
+<tr class=""><td class="h">Template for new apps</td><td class="r">191</td><td class="r">158</td><td class="r">158</td><td class="r n">100%</td><td class="b"><i style="width:100.0%"></i></td></tr>
+<tr class=""><td class="h">Internal dashboard</td><td class="r">172</td><td class="r">172</td><td class="r">115</td><td class="r n">67%</td><td class="b"><i style="width:66.9%"></i></td></tr>
+<tr class=""><td class="h">12 smaller repositories</td><td class="r">194</td><td class="r">177</td><td class="r">142</td><td class="r n">80%</td><td class="b"><i style="width:80.2%"></i></td></tr>
+<tr class="tot"><td class="h">All 20</td><td class="r">12,206</td><td class="r">9,596</td><td class="r">8,168</td><td class="r n">85%</td><td class="b"><i style="width:85.1%"></i></td></tr></tbody></table></div>
+  </div>
+  <figcaption>The fleet documentation is written by a script, which signs nothing.</figcaption>
+</figure>
+
+<figure aria-label="Which Claude model signed each month's commits in the fleet's repository">
+  <div class="panel">
+    <div class="fig-h"><span class="fig-t">Which model wrote the code</span><span class="fig-s">authored commits, fleet repository · by co-author line</span></div>
+    <div class="segs">
+<div class="srow"><span class="ml">Apr</span><span class="sn">32</span><span class="seg"><i class="s-c4" style="flex:8 0 0" title="Claude 4 series: 8 of 32"></i><i class="s-none" style="flex:24 0 0" title="no signature: 24 of 32"></i></span><span class="stop">no signature, 75%</span></div>
+<div class="srow"><span class="ml">May</span><span class="sn">196</span><span class="seg"><i class="s-c4" style="flex:155 0 0" title="Claude 4 series: 155 of 196"></i><i class="s-none" style="flex:41 0 0" title="no signature: 41 of 196"></i></span><span class="stop">Claude 4 series, 79%</span></div>
+<div class="srow"><span class="ml">Jun</span><span class="sn">166</span><span class="seg"><i class="s-c4" style="flex:132 0 0" title="Claude 4 series: 132 of 166"></i><i class="s-fable" style="flex:34 0 0" title="Fable 5, 5.1, 5.2: 34 of 166"></i></span><span class="stop">Claude 4 series, 80%</span></div>
+<div class="srow"><span class="ml">Jul</span><span class="sn">273</span><span class="seg"><i class="s-c4" style="flex:7 0 0" title="Claude 4 series: 7 of 273"></i><i class="s-fable" style="flex:180 0 0" title="Fable 5, 5.1, 5.2: 180 of 273"></i><i class="s-other" style="flex:77 0 0" title="other Claude: 77 of 273"></i><i class="s-none" style="flex:9 0 0" title="no signature: 9 of 273"></i></span><span class="stop">Fable 5, 5.1, 5.2, 66%</span></div>
+<div class="srow"><span class="ml">Aug</span><span class="sn">128</span><span class="seg"><i class="s-c4" style="flex:2 0 0" title="Claude 4 series: 2 of 128"></i><i class="s-fable" style="flex:82 0 0" title="Fable 5, 5.1, 5.2: 82 of 128"></i><i class="s-other" style="flex:18 0 0" title="other Claude: 18 of 128"></i><i class="s-none" style="flex:26 0 0" title="no signature: 26 of 128"></i></span><span class="stop">Fable 5, 5.1, 5.2, 64%</span></div>
+<div class="srow"><span class="ml">Sep</span><span class="sn">320</span><span class="seg"><i class="s-c4" style="flex:13 0 0" title="Claude 4 series: 13 of 320"></i><i class="s-fable" style="flex:86 0 0" title="Fable 5, 5.1, 5.2: 86 of 320"></i><i class="s-opus55" style="flex:190 0 0" title="Opus 5.5: 190 of 320"></i><i class="s-other" style="flex:24 0 0" title="other Claude: 24 of 320"></i><i class="s-none" style="flex:7 0 0" title="no signature: 7 of 320"></i></span><span class="stop">Opus 5.5, 59%</span></div>
+<div class="srow"><span class="ml">Oct</span><span class="sn">1,145</span><span class="seg"><i class="s-c4" style="flex:1 0 0" title="Claude 4 series: 1 of 1,145"></i><i class="s-fable" style="flex:48 0 0" title="Fable 5, 5.1, 5.2: 48 of 1,145"></i><i class="s-opus55" style="flex:1086 0 0" title="Opus 5.5: 1,086 of 1,145"></i><i class="s-other" style="flex:9 0 0" title="other Claude: 9 of 1,145"></i><i class="s-none" style="flex:1 0 0" title="no signature: 1 of 1,145"></i></span><span class="stop">Opus 5.5, 95%</span></div>
+<div class="srow"><span class="ml">Nov*</span><span class="sn">1,387</span><span class="seg"><i class="s-fable" style="flex:67 0 0" title="Fable 5, 5.1, 5.2: 67 of 1,387"></i><i class="s-opus55" style="flex:1318 0 0" title="Opus 5.5: 1,318 of 1,387"></i><i class="s-other" style="flex:2 0 0" title="other Claude: 2 of 1,387"></i></span><span class="stop">Opus 5.5, 95%</span></div>
+</div><p class="legend"><span><i class="s-c4"></i>Claude 4 series</span><span><i class="s-fable"></i>Fable 5, 5.1, 5.2</span><span><i class="s-opus55"></i>Opus 5.5</span><span><i class="s-other"></i>other Claude</span><span><i class="s-none"></i>no signature</span></p>
+  </div>
+  <figcaption>The Claude 4 series is Sonnet 4.6 and Opus 4.6 to 4.8. “Other Claude” is Opus 5, Sonnet 5, Sonnet 5.5 and unversioned lines. <a class="ag" href="https://aistolemyjob.org/fleet/rico">Rico</a>’s script stamps a fixed “Claude Opus 4.6” line whatever it ran, so its commits say nothing about the model.</figcaption>
+</figure>
+
+<figure aria-label="How 104.6 billion tokens divide between cache reads, cache writes and output">
+  <div class="panel">
+    <div class="fig-h"><span class="fig-t">104.6 billion tokens, by kind</span><span class="fig-s">coding sessions on one Mac mini · to Nov 1 · the tool’s own tally</span></div>
+    <div class="whole" role="img" aria-label="96.7 percent cache reads, 3.1 percent cache writes, 0.2 percent output">
+      <i class="s-other" style="flex:101205 0 0">96.7% reread from cache</i><i class="s-c4" style="flex:3205 0 0;padding:0"></i><i class="s-opus55" style="flex:206 0 0;padding:0"></i>
+    </div>
+    <p class="legend"><span><i class="s-other"></i>cache reads <b>101.2B</b></span><span><i class="s-c4"></i>cache writes <b>3.2B</b></span><span><i class="s-opus55"></i>output <b>206M</b></span><span>uncached input, too thin to draw <b>4.6M</b></span></p>
+  </div>
+  <figcaption>My own recount of one week from the raw session records agrees with the total within 6 percent. Those records under-record output, so the output slice rests on the tool’s tally alone. October was 79.9 billion tokens, about 137 million for each change merged that month.</figcaption>
+</figure>
+
+<figure aria-label="Visitors to the main site by month, two ways of counting">
+  <div class="panel">
+    <div class="fig-h"><span class="fig-t">Visitors to yourstopwashit.com</span><span class="fig-s">unique visitors by month · two ways of counting</span></div>
+    <div class="scroll"><table class="data">
+      <thead><tr><th>Month</th><th class="r">Everyone with a page view</th><th class="r">Stayed long enough to count</th></tr></thead>
+      <tbody>
+        <tr><td class="h">Jul</td><td class="r">248</td><td class="r">169 <span class="mute">from Jul 14</span></td></tr>
+        <tr><td class="h">Aug</td><td class="r">515</td><td class="r">422</td></tr>
+        <tr><td class="h">Sep</td><td class="r">2,309</td><td class="r n">2,095</td></tr>
+        <tr><td class="h">Oct</td><td class="r">1,413</td><td class="r">1,064</td></tr>
+        <tr><td class="h">Nov*</td><td class="r">723</td><td class="r n">94</td></tr>
+      </tbody></table></div>
+  </div>
+  <figcaption>The first column is the analytics service queried directly, with no filtering. The second is the internal dashboard’s count, which drops one-hit loads, scripts and my own browsers. *Through November 22.</figcaption>
+</figure>
+
+<figure aria-label="Logged runs per agent by month">
+  <div class="panel">
+    <div class="fig-h"><span class="fig-t">Logged runs per agent, by month</span><span class="fig-s">public feed · the 14 busiest agents</span></div>
+    <div class="scroll"><table class="data"><thead><tr><th>Agent</th><th class="r">Feb</th><th class="r">Mar</th><th class="r">Apr</th><th class="r">May</th><th class="r">Jun</th><th class="r">Jul</th><th class="r">Aug</th><th class="r">Sep</th><th class="r">Oct</th><th class="r">Nov</th></tr></thead><tbody>
+<tr><td class="h"><a class="ag" href="https://aistolemyjob.org/fleet/juana">Juana</a></td><td class="r">1,502</td><td class="r">2,259</td><td class="r">12</td><td class="r">31</td><td class="r">921</td><td class="r">4,521</td><td class="r">9,283</td><td class="r">8,398</td><td class="r">7,054</td><td class="r">5,087</td></tr>
+<tr><td class="h"><a class="ag" href="https://aistolemyjob.org/fleet/antonio">Antonio</a></td><td class="r">58</td><td class="r">31</td><td class="r mute">·</td><td class="r mute">·</td><td class="r">2,538</td><td class="r">4,513</td><td class="r">4,514</td><td class="r">4,117</td><td class="r">3,207</td><td class="r">2,198</td></tr>
+<tr><td class="h"><a class="ag" href="https://aistolemyjob.org/fleet/marco">Marco</a></td><td class="r mute">·</td><td class="r mute">·</td><td class="r">60</td><td class="r">151</td><td class="r">3,202</td><td class="r">4,490</td><td class="r">4,219</td><td class="r">4,124</td><td class="r">891</td><td class="r">986</td></tr>
+<tr><td class="h"><a class="ag" href="https://aistolemyjob.org/fleet/rico">Rico</a></td><td class="r mute">·</td><td class="r">191</td><td class="r mute">·</td><td class="r mute">·</td><td class="r">1,712</td><td class="r">2,740</td><td class="r">2,746</td><td class="r">2,668</td><td class="r">2,754</td><td class="r">2,263</td></tr>
+<tr><td class="h"><a class="ag" href="https://aistolemyjob.org/fleet/luna">Luna</a></td><td class="r mute">·</td><td class="r mute">·</td><td class="r">2</td><td class="r">1</td><td class="r">1,243</td><td class="r">2,413</td><td class="r">2,852</td><td class="r">2,453</td><td class="r">2,089</td><td class="r">2,452</td></tr>
+<tr><td class="h"><a class="ag" href="https://aistolemyjob.org/fleet/steve">Steve</a></td><td class="r mute">·</td><td class="r">974</td><td class="r">189</td><td class="r">15</td><td class="r">1,322</td><td class="r">2,095</td><td class="r">2,071</td><td class="r">2,032</td><td class="r">2,133</td><td class="r">1,478</td></tr>
+<tr><td class="h"><a class="ag" href="https://aistolemyjob.org/fleet/mateo">Mateo</a></td><td class="r mute">·</td><td class="r">735</td><td class="r">505</td><td class="r">354</td><td class="r">2,435</td><td class="r">1,477</td><td class="r">1,365</td><td class="r">1,338</td><td class="r">1,418</td><td class="r">982</td></tr>
+<tr><td class="h"><a class="ag" href="https://aistolemyjob.org/fleet/lola">Lola</a></td><td class="r mute">·</td><td class="r mute">·</td><td class="r">15</td><td class="r">108</td><td class="r">1,677</td><td class="r">1,579</td><td class="r">1,500</td><td class="r">1,159</td><td class="r">1,250</td><td class="r">1,243</td></tr>
+<tr><td class="h"><a class="ag" href="https://aistolemyjob.org/fleet/sofia">Sofia</a></td><td class="r mute">·</td><td class="r">119</td><td class="r">101</td><td class="r">45</td><td class="r">488</td><td class="r">1,458</td><td class="r">1,652</td><td class="r">1,624</td><td class="r">1,671</td><td class="r">1,124</td></tr>
+<tr><td class="h"><a class="ag" href="https://aistolemyjob.org/fleet/felix">Felix</a></td><td class="r mute">·</td><td class="r mute">·</td><td class="r">2</td><td class="r">25</td><td class="r">692</td><td class="r">2,055</td><td class="r">2,141</td><td class="r">1,794</td><td class="r">785</td><td class="r">544</td></tr>
+<tr><td class="h"><a class="ag" href="https://aistolemyjob.org/fleet/diego">Diego</a></td><td class="r mute">·</td><td class="r mute">·</td><td class="r">7</td><td class="r">13</td><td class="r">1,183</td><td class="r">2,145</td><td class="r">2,161</td><td class="r">1,800</td><td class="r">126</td><td class="r">22</td></tr>
+<tr><td class="h"><a class="ag" href="https://aistolemyjob.org/fleet/gloria">Gloria</a></td><td class="r mute">·</td><td class="r mute">·</td><td class="r mute">·</td><td class="r mute">·</td><td class="r mute">·</td><td class="r mute">·</td><td class="r">775</td><td class="r">1,340</td><td class="r">1,418</td><td class="r">981</td></tr>
+<tr><td class="h"><a class="ag" href="https://aistolemyjob.org/fleet/maxi">Maxi</a></td><td class="r mute">·</td><td class="r mute">·</td><td class="r">1</td><td class="r">30</td><td class="r">680</td><td class="r">182</td><td class="r">32</td><td class="r">30</td><td class="r">17</td><td class="r">41</td></tr>
+<tr><td class="h"><a class="ag" href="https://aistolemyjob.org/fleet/carlos">Carlos</a></td><td class="r mute">·</td><td class="r">12</td><td class="r mute">·</td><td class="r">1</td><td class="r mute">·</td><td class="r">29</td><td class="r">62</td><td class="r">60</td><td class="r">73</td><td class="r">272</td></tr>
+<tr class="tot"><td class="h">All 18</td><td class="r">1,569</td><td class="r">4,321</td><td class="r">894</td><td class="r">774</td><td class="r">18,093</td><td class="r">29,736</td><td class="r">35,435</td><td class="r">32,997</td><td class="r">24,998</td><td class="r">19,698</td></tr></tbody></table></div>
+  </div>
+  <figcaption>Read the early months with care. Until October 12 the run log kept scheduled runs for only 120 days, so months before mid-June are undercounted, and the feed says some runs between July 3 and early October are in no log at all.</figcaption>
+</figure>
+
+<h3 id="local">Running a model locally</h3>
+<ul>
+  <li>Thirteen of the sixteen configured agents are bound to Qwen 3.6 35B, served by Ollama on a Mac Studio with 256 GB of memory. One is bound to Claude Sonnet 4.6, one runs scripts only, and the newest has no model recorded. The public feed’s per-agent records also show Qwen 2.5, 3 and 3.5.</li>
+  <li>Of 9,698 local model calls in the gateway’s log since July 11, 56 percent were video scripts and 15 percent were social posts.</li>
+  <li>Qwen’s thinking mode has to be off, or it spends the whole output budget thinking and returns nothing.</li>
+  <li>One caller did not set a context length, and a 27B model loaded with a 131k window: 99.6 GiB of memory where 27.1 was planned.</li>
+  <li>On August 23 the fleet’s own test runs sent several large requests to the local model at once and wedged it seven times in an afternoon.</li>
+  <li><a class="ag" href="https://aistolemyjob.org/fleet/juana">Juana</a>’s Threads posts are split between Qwen and Claude Sonnet 5.5 in a registered six-week test. If the result is inconclusive, Qwen stays.</li>
+  <li><a class="ag" href="https://aistolemyjob.org/fleet/rico">Rico</a>’s coding sessions: 252 logged for its model test, typically six and a half minutes long, with a median of 12 turns on one model and 23 on the other.</li>
+  <li>On November 17 the same coding tool, pointed at Qwen with a 64k context, solved a test task (two bugs and two missing rules, checked by five tests) in six turns and 20 seconds.</li>
+  <li>A session on the backup model will run under its own user account, reach nothing but the model, and pass the same tests and reviewers as any other change. As of November 22 it is switched off.</li>
+  <li>In November the budget for rented test machines ran out. The tests now run on my own computers.</li>
+</ul>
+
+<h3 id="checked">How each number was checked</h3>
+<figure aria-label="Fact check: each headline number, its source and the second check">
+  <div class="panel">
+    <div class="scroll"><table class="data wrap">
+      <thead><tr><th>Number</th><th>Source</th><th>Second check</th></tr></thead>
+      <tbody>
+        <tr><td class="h">4,926 changes</td><td>GitHub’s search interface, every change merged Mar 1 to Nov 21</td><td><span class="ok">Matches.</span> Every change listed again through a different GitHub interface: the same 5,283, the same 357 batches removed, the same count in every month.</td></tr>
+        <tr><td class="h">Speed and size of changes</td><td>Open and merge times and line counts for all 4,926</td><td><span class="ok">Matches.</span> Timing recomputed from the second listing. Fourteen changes drawn at random and fetched one at a time: 14 of 14 sizes agree.</td></tr>
+        <tr><td class="h">104.6 billion tokens</td><td>The coding tool’s usage file</td><td><span class="ok">Within 6%.</span> One week recounted from raw session records, each model call counted once: 14.7 billion against the file’s 13.9 billion. <span class="warn">The output share could not be confirmed this way.</span></td></tr>
+        <tr><td class="h">85% and 97% signed by Claude</td><td>Commit history of all 20 repositories</td><td><span class="ok">Counted twice,</span> with and without a date cutoff, with the same shares. Merge commits are excluded; with them in the base, the share reads 67%.</td></tr>
+        <tr><td class="h">16 → 1 on October 30</td><td>The fleet’s grade history, all 125 readings</td><td><span class="ok">Confirmed to the minute.</span> Readings at 11:28 a.m. and 5:30 p.m. Central; the rule change is in the commit history, merged at 3:40 p.m.</td></tr>
+        <tr><td class="h">$99 from one customer; $297 peak</td><td>The payment processor’s live figures on the internal dashboard</td><td><span class="ok">Matches</span> the fleet’s own daily revenue file, which also records the August peak, and the user records, which show a failed payment on September 8.</td></tr>
+        <tr><td class="h">AI subscriptions: $200 each, one to six over the year</td><td>My own recollection</td><td><span class="warn">Not checked</span> against invoices.</td></tr>
+        <tr><td class="h">117 people on the books</td><td>The user records page, 11:00 a.m. Central on Nov 22</td><td><span class="warn">One source.</span> Its revenue line agrees with the two sources above.</td></tr>
+        <tr><td class="h">1,954 video uploads</td><td>The <a href="https://aistolemyjob.org/fleet">public feed</a></td><td><span class="ok">Matches.</span> The two upload logs counted directly: 1,191 Instagram and 763 YouTube.</td></tr>
+        <tr><td class="h">158,276 shifts</td><td>The <a href="https://aistolemyjob.org/fleet">public feed</a></td><td><span class="warn">One source.</span> The feed calls it a floor and says some runs from July to October are in no log.</td></tr>
+        <tr><td class="h">Visitors and sign-ups</td><td>The internal dashboard</td><td><span class="ok">Consistent</span> with the analytics service queried directly; the two count differently and both are shown.</td></tr>
+        <tr><td class="h">Incidents and their dates</td><td>The decisions log, the incident records and comments in the code</td><td><span class="ok">Checked against the code</span> where possible: the oldest commit is stamped March 31, 1:14 a.m.; the command blocker, the file count and the approval gate all exist in the repository.</td></tr>
+        <tr><td class="h">July audit: 26, 7, 1, $791 and 842 emails</td><td>One record of pulls dated July 3 to 5</td><td><span class="warn">Not re-pulled</span> for this article.</td></tr>
+        <tr><td class="h">Lines of software</td><td>My own count on November 22</td><td><span class="ok">Recounted</span> from the files: 981,566 and 367,010 non-blank lines in the two largest repositories.</td></tr>
+      </tbody></table></div>
+  </div>
+</figure>
+
+<h3 id="method">How I measured this</h3>
+<dl class="method">
+  <dt>Changes</dt><dd>Every pull request merged from March 1 through November 21, 2026 (UTC) in the three busiest repositories: 5,283. I left out 357 whose branch begins with batch/, because each only bundles other changes that are already counted. Across all twenty repositories the raw count is 5,755. The first essay counted 955 merged pull requests on March 24; my count in the three repositories through that day is 895.</dd>
+  <dt>Who wrote it</dt><dd>A branch beginning with agent/ is <a class="ag" href="https://aistolemyjob.org/fleet/rico">Rico</a>’s. Everything else is counted as a coding session. Model signatures are the co-author lines of commits on each repository’s default branch through November 21, merge commits excluded: 8,168 of 9,596. “This fall” means September through November.</dd>
+  <dt>Agents, shifts, grades</dt><dd>The fleet’s public feed, read on November 22: <a href="https://aistolemyjob.org/fleet">the page</a>, and the raw files for the <a href="https://rlsfiedzcycmkvxjwqls.supabase.co/storage/v1/object/public/public-fleet/fleet.json">agents</a> and their <a href="https://rlsfiedzcycmkvxjwqls.supabase.co/storage/v1/object/public/public-fleet/autonomy.json">grades</a>. The grade history and each agent’s metric readings come from the fleet’s own history files, which begin October 22 and 23. My hand ratings are on the <a href="https://aistolemyjob.org/fleet">public fleet page</a> and were given between May 24 and July 11: usefulness and sellability, each out of 10.</dd>
+  <dt>Money and customers</dt><dd>Monthly revenue and active subscriptions from the fleet’s daily revenue file, which begins July 18, and from the payment processor’s figures on the internal dashboard, read November 22. Bills are the feed’s own figure: a fixed $280 for infrastructure and $28 in metered AI charges over 30 days. The count of AI subscriptions is my own recollection. The count of 117 people and its groups are from the user records page as of 11:00 a.m. Central on November 22. The July figures are from a record of pulls dated July 3 to 5.</dd>
+  <dt>Visitors and sign-ups</dt><dd>The internal dashboard on November 22: browsers that loaded a page and stayed long enough to send a second signal, with scripts and my own browsers removed. Monthly figures are unique visitors to the main site. The 30-day figures add up each day’s count across the four sites, so a person who came on two days is counted twice; unique visitors over the same 30 days were 187. Sign-ups are confirmed accounts.</dd>
+  <dt>Tokens</dt><dd>The coding tool’s own usage file on the Mac mini that runs the sessions, last computed November 1. Daily records run from July 23 and total 103.7 billion; the cumulative total is 104.6 billion, and the first recorded session is February 21. It covers one machine. <a class="ag" href="https://aistolemyjob.org/fleet/rico">Rico</a>’s sessions on the Mac Studio are logged separately: the 252 in its model test used 448 million tokens. The public feed also holds an older ledger for February 18 to June 18, but it was sealed before duplicate calls were removed and is not added here. The comparisons to novels and to years of reading assume three-quarters of a word per token, a 100,000-word novel and 300 words a minute.</dd>
+  <dt>Pages, exams, sessions</dt><dd>Read as numbers only from logs on the Mac Studio: the pager ledger from October 18, <a class="ag" href="https://aistolemyjob.org/fleet/rico">Rico</a>’s session log for its model test (October 24 to November 17), and the nightly exam logs (September 23 to November 21).</dd>
+  <dt>Incidents</dt><dd>The fleet’s decisions log and incident playbook, the incident records, an operators’ guide, comments in the code, and my operating notes from August through November. The March 31 incident was an AI coding session running git init and a force-push in the fleet’s repository; the commit it left is still the oldest in the history. The trading figures are from the incident records of June 15 and August 25.</dd>
+  <dt>Not measured</dt><dd>What the coding sessions would cost at list prices. Trading results beyond the two incidents described. How many distinct videos the 1,954 uploads represent. Whether any agent has improved by a measure I would defend, which is the point of the section on grading.</dd>
+</dl>
+</article>
+</body></html>
